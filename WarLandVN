@@ -1,63 +1,52 @@
-local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Rayfield/main/source'))()
+-- 1. Tạo giao diện gốc
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local AutoClickBtn = Instance.new("TextButton")
 
-local Window = Rayfield:CreateWindow({
-   Name = "WarLand VN | Blox Fruits",
-   LoadingTitle = "Đang khởi động hệ thống...",
-   ConfigurationSaving = {
-      Enabled = true,
-      FolderName = "WarLand_Data",
-      FileName = "MainConfig"
-   },
-   Discord = {
-      Enabled = false,
-      Invite = "",
-      RememberJoins = true
-   },
-})
+ScreenGui.Parent = game.CoreGui
+ScreenGui.Name = "WarLandVN_Custom"
 
--- ================= TAB CÀY CUỐC =================
-local MainTab = Window:CreateTab("Cày Cuốc", 4483362458)
+-- 2. Chỉnh bảng chính (Main Frame)
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+MainFrame.Position = UDim2.new(0.4, 0, 0.4, 0)
+MainFrame.Size = UDim2.new(0, 200, 0, 150)
+MainFrame.Active = true
+MainFrame.Draggable = true -- Có thể kéo di chuyển
 
+-- 3. Tiêu đề
+Title.Parent = MainFrame
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.Text = "WARLAND VN"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+
+-- 4. Nút Auto Click
+AutoClickBtn.Parent = MainFrame
+AutoClickBtn.Size = UDim2.new(0.8, 0, 0, 40)
+AutoClickBtn.Position = UDim2.new(0.1, 0, 0.4, 0)
+AutoClickBtn.Text = "Bật Auto Click"
+AutoClickBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+
+-- LOGIC HACK
 _G.AutoClick = false
-MainTab:CreateToggle({
-   Name = "Auto Click (Đánh nhanh)",
-   CurrentValue = false,
-   Flag = "ToggleClick", 
-   Callback = function(Value)
-      _G.AutoClick = Value
-      spawn(function()
-         while _G.AutoClick do
+AutoClickBtn.MouseButton1Click:Connect(function()
+    _G.AutoClick = not _G.AutoClick
+    if _G.AutoClick then
+        AutoClickBtn.Text = "Đang Auto: BẬT"
+        AutoClickBtn.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+    else
+        AutoClickBtn.Text = "Bật Auto Click"
+        AutoClickBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+    end
+    
+    spawn(function()
+        while _G.AutoClick do
             task.wait(0.1)
             pcall(function()
-                -- Mã đánh chuẩn cho Blox Fruits
                 game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Attack")
             end)
-         end
-      end)
-   end,
-})
-
--- ================= TAB NGƯỜI CHƠI =================
-local PlayerTab = Window:CreateTab("Người Chơi", 4483362458)
-
-PlayerTab:CreateSlider({
-   Name = "Tốc độ chạy",
-   Range = {16, 300},
-   Increment = 1,
-   Suffix = "Speed",
-   CurrentValue = 16,
-   Flag = "SliderSpeed",
-   Callback = function(Value)
-      game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
-   end,
-})
-
-PlayerTab:CreateButton({
-   Name = "Nhảy cao",
-   Callback = function()
-       game.Players.LocalPlayer.Character.Humanoid.JumpPower = 100
-   end,
-})
-
--- QUAN TRỌNG: Dòng này để hoàn tất nạp giao diện
-Rayfield:LoadConfiguration()
+        end
+    end)
+end)
