@@ -1,0 +1,88 @@
+-- 1. Nạp thư viện Rayfield (Dòng bạn đã viết trong ảnh)
+local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Rayfield/main/source'))()
+
+-- 2. Tạo cửa sổ chính
+local Window = Rayfield:CreateWindow({
+   Name = "Blox Fruits Custom Script",
+   LoadingTitle = "Đang khởi tạo hệ thống...",
+   LoadingSubtitle = "by DatRC12",
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = "DatRC12_Scripts",
+      FileName = "BloxFruits_Config"
+   },
+   Discord = {
+      Enabled = false, -- Chỉnh thành true nếu bạn muốn thêm link Discord cá nhân
+      Invite = "",
+      RememberJoins = true 
+   },
+})
+
+-- 3. Tạo các Tab chức năng
+local MainTab = Window:CreateTab("Tự Động", 4483362458) -- Icon hình ngôi sao/tiện ích
+local MiscTab = Window:CreateTab("Khác", 4483362458)
+
+-- 4. Biến điều khiển (Dùng để bật/tắt logic)
+_G.AutoClick = false
+
+-- 5. Thêm Section (Nhóm các tính năng)
+local MainSection = MainTab:CreateSection("Cày Cuốc Cơ Bản")
+
+-- 6. Nút bấm Test (Từ ảnh của bạn)
+local Button = MainTab:CreateButton({
+   Name = "Kiểm Tra Giao Diện",
+   Callback = function()
+       Rayfield:Notify({
+          Title = "Thông báo",
+          Content = "Giao diện Rayfield đã hoạt động!",
+          Duration = 3,
+       })
+   end,
+})
+
+-- 7. Nút gạt Auto Click (Logic hack bắt đầu từ đây)
+local Toggle = MainTab:CreateToggle({
+   Name = "Bật Auto Click (Đánh Quái)",
+   CurrentValue = false,
+   Flag = "ToggleAutoClick", 
+   Callback = function(Value)
+      _G.AutoClick = Value -- Gán trạng thái Bật/Tắt vào biến
+      
+      if Value then
+          -- Sử dụng spawn để vòng lặp chạy ngầm, không gây lag Menu
+          spawn(function()
+              while _G.AutoClick do
+                  task.wait(0.1) -- Tốc độ click (0.1 giây mỗi lần)
+                  
+                  -- CODE LOGIC HACK:
+                  -- Sau khi bạn dùng SimpleSpy để lấy code đánh quái, hãy dán vào đây.
+                  -- Ví dụ mẫu:
+                  local args = { [1] = "Combat", [2] = "LeftClick" }
+                  game:GetService("ReplicatedStorage").Events.Attack:FireServer(unpack(args))
+                  
+                  print("Đang đánh...") 
+              end
+          end)
+      end
+   end,
+})
+
+-- 8. Thêm tính năng thay đổi tốc độ chạy (WalkSpeed)
+local Slider = MiscTab:CreateSlider({
+   Name = "Tốc Độ Chạy",
+   Range = {16, 200},
+   Increment = 1,
+   Suffix = " Speed",
+   CurrentValue = 16,
+   Flag = "SpeedSlider",
+   Callback = function(Value)
+      game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
+   end,
+})
+
+-- Thông báo khi nạp thành công
+Rayfield:Notify({
+   Title = "Sẵn Sàng!",
+   Content = "Chúc bạn trải nghiệm vui vẻ!",
+   Duration = 5,
+})
