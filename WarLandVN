@@ -2,7 +2,8 @@ local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/shle
 
 local Window = Rayfield:CreateWindow({
    Name = "WarLand VN | Blox Fruits",
-   LoadingTitle = "Đang khởi động WarLand...",
+   LoadingTitle = "Đang khởi động hệ thống...",
+   -- Đã bỏ LoadingSubtitle theo ý bạn
    ConfigurationSaving = {
       Enabled = true,
       FolderName = "WarLand_Data",
@@ -15,13 +16,12 @@ local Window = Rayfield:CreateWindow({
    },
 })
 
--- 1. Tab chính cho các tính năng tự động
+-- TAB CÀY CUỐC
 local MainTab = Window:CreateTab("Cày Cuốc", 4483362458)
 
 _G.AutoClick = false
-
 MainTab:CreateToggle({
-   Name = "Auto Click (Đánh siêu nhanh)",
+   Name = "Auto Click (Đánh nhanh)",
    CurrentValue = false,
    Flag = "ToggleClick", 
    Callback = function(Value)
@@ -29,7 +29,7 @@ MainTab:CreateToggle({
       spawn(function()
          while _G.AutoClick do
             task.wait(0.1)
-            -- Mã đánh mẫu cho Blox Fruits
+            -- Mã đánh mẫu
             pcall(function()
                 game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Attack")
             end)
@@ -38,11 +38,11 @@ MainTab:CreateToggle({
    end,
 })
 
--- 2. Tab cho nhân vật (Người chơi)
+-- TAB NGƯỜI CHƠI
 local PlayerTab = Window:CreateTab("Người Chơi", 4483362458)
 
 PlayerTab:CreateSlider({
-   Name = "Tốc độ chạy (WalkSpeed)",
+   Name = "Tốc độ chạy",
    Range = {16, 300},
    Increment = 1,
    Suffix = "Speed",
@@ -53,29 +53,10 @@ PlayerTab:CreateSlider({
    end,
 })
 
-PlayerTab:CreateSlider({
-   Name = "Sức mạnh nhảy (JumpPower)",
-   Range = {50, 500},
-   Increment = 1,
-   Suffix = "Power",
-   CurrentValue = 50,
-   Flag = "SliderJump",
-   Callback = function(Value)
-      game.Players.LocalPlayer.Character.Humanoid.JumpPower = Value
-   end,
-})
-
--- 3. Tab Thông tin
-local InfoTab = Window:CreateTab("Thông Tin", 4483362458)
-
-InfoTab:CreateButton({
-   Name = "Kiểm tra phiên bản",
+PlayerTab:CreateButton({
+   Name = "Nhảy cực cao",
    Callback = function()
-       Rayfield:Notify({
-          Title = "WarLand VN",
-          Content = "Bạn đang sử dụng phiên bản Full mới nhất!",
-          Duration = 5,
-       })
+       game.Players.LocalPlayer.Character.Humanoid.JumpPower = 150
    end,
 })
 
