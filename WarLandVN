@@ -1,46 +1,82 @@
--- 1. Tạo giao diện gốc
+-- 1. Khởi tạo Giao diện (Custom UI siêu nhẹ)
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
+local Logo = Instance.new("ImageLabel")
 local Title = Instance.new("TextLabel")
-local AutoClickBtn = Instance.new("TextButton")
+local Container = Instance.new("ScrollingFrame")
+local UIListLayout = Instance.new("UIListLayout")
 
 ScreenGui.Parent = game.CoreGui
-ScreenGui.Name = "WarLandVN_Custom"
+ScreenGui.Name = "WarLand_Full"
 
--- 2. Chỉnh bảng chính (Main Frame)
+-- Bảng chính
 MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-MainFrame.Position = UDim2.new(0.4, 0, 0.4, 0)
-MainFrame.Size = UDim2.new(0, 200, 0, 150)
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+MainFrame.BorderSizePixel = 0
+MainFrame.Position = UDim2.new(0.3, 0, 0.3, 0)
+MainFrame.Size = UDim2.new(0, 300, 0, 400)
 MainFrame.Active = true
-MainFrame.Draggable = true -- Có thể kéo di chuyển
+MainFrame.Draggable = true -- Có thể kéo di chuyển trên LDPlayer
 
--- 3. Tiêu đề
+-- Chèn LOGO ID mới 9861125091
+Logo.Parent = MainFrame
+Logo.BackgroundTransparency = 1
+Logo.Position = UDim2.new(0.5, -40, 0, 10)
+Logo.Size = UDim2.new(0, 80, 0, 80)
+Logo.Image = "rbxassetid://9861125091"
+
+-- Tiêu đề
 Title.Parent = MainFrame
+Title.BackgroundTransparency = 1
+Title.Position = UDim2.new(0, 0, 0, 95)
 Title.Size = UDim2.new(1, 0, 0, 30)
-Title.Text = "WARLAND VN"
+Title.Text = "WARLAND VN FULL"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+Title.TextSize = 20
+Title.Font = Enum.Font.GothamBold
 
--- 4. Nút Auto Click
-AutoClickBtn.Parent = MainFrame
-AutoClickBtn.Size = UDim2.new(0.8, 0, 0, 40)
-AutoClickBtn.Position = UDim2.new(0.1, 0, 0.4, 0)
-AutoClickBtn.Text = "Bật Auto Click"
-AutoClickBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+-- Khu vực chứa nút chức năng
+Container.Parent = MainFrame
+Container.BackgroundTransparency = 1
+Container.Position = UDim2.new(0, 10, 0, 130)
+Container.Size = UDim2.new(1, -20, 1, -140)
+Container.ScrollBarThickness = 2
 
--- LOGIC HACK
+UIListLayout.Parent = Container
+UIListLayout.Padding = Height.new(0, 10)
+
+-- HÀM TẠO NÚT (Helper)
+local function CreateButton(name, color, callback)
+    local btn = Instance.new("TextButton")
+    btn.Parent = Container
+    btn.Size = UDim2.new(1, 0, 0, 40)
+    btn.BackgroundColor3 = color
+    btn.Text = name
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.GothamSemibold
+    btn.TextSize = 14
+    
+    -- Bo góc nút cho đẹp
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 8)
+    corner.Parent = btn
+
+    btn.MouseButton1Click:Connect(callback)
+end
+
+-- ================= CÁC CHỨC NĂNG FULL =================
+
+-- 1. Auto Click
 _G.AutoClick = false
-AutoClickBtn.MouseButton1Click:Connect(function()
+CreateButton("Auto Click: TẮT", Color3.fromRGB(70, 70, 70), function(self)
     _G.AutoClick = not _G.AutoClick
     if _G.AutoClick then
-        AutoClickBtn.Text = "Đang Auto: BẬT"
-        AutoClickBtn.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+        game:GetService("TextButton").Text = "Auto Click: ĐANG BẬT"
+        game:GetService("TextButton").BackgroundColor3 = Color3.fromRGB(0, 170, 0)
     else
-        AutoClickBtn.Text = "Bật Auto Click"
-        AutoClickBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+        game:GetService("TextButton").Text = "Auto Click: TẮT"
+        game:GetService("TextButton").BackgroundColor3 = Color3.fromRGB(70, 70, 70)
     end
-    
     spawn(function()
         while _G.AutoClick do
             task.wait(0.1)
@@ -50,3 +86,31 @@ AutoClickBtn.MouseButton1Click:Connect(function()
         end
     end)
 end)
+
+-- 2. Gom Quái (Bring Mobs - Cơ bản)
+CreateButton("Gom Quái Lại Gần", Color3.fromRGB(0, 120, 215), function()
+    local playerPos = game.Players.LocalPlayer.Character.HumanoidRootPart.Position
+    for i, v in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
+        if v:FindFirstChild("HumanoidRootPart") then
+            v.HumanoidRootPart.CFrame = CFrame.new(playerPos + Vector3.new(0, 0, 5))
+            v.HumanoidRootPart.CanCollide = false
+        end
+    end
+end)
+
+-- 3. Siêu Tốc Độ (WalkSpeed)
+CreateButton("Siêu Tốc Độ (Speed)", Color3.fromRGB(200, 150, 0), function()
+    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 100
+end)
+
+-- 4. Nhảy Vô Hạn
+CreateButton("Nhảy Cực Cao", Color3.fromRGB(150, 0, 200), function()
+    game.Players.LocalPlayer.Character.Humanoid.JumpPower = 150
+end)
+
+-- 5. Nút Tắt Menu
+CreateButton("ĐÓNG MENU", Color3.fromRGB(170, 0, 0), function()
+    ScreenGui:Destroy()
+end)
+
+print("WarLand VN Full Loaded!")
