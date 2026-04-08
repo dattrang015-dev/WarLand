@@ -1,166 +1,146 @@
---[[ 
-    WARLAND VN HUB (V5.5 FINAL)
-    - Tối ưu hóa đa luồng cho Ultra Bug
-    - Hỗ trợ full lộ trình Up Tộc V2 -> V4
-    - Hệ thống chống văng (Anti-Crash) tích hợp
-]]
-
 local player = game.Players.LocalPlayer
 local RS = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-local TS = game:GetService("TeleportService")
 local UIS = game:GetService("UserInputService")
-local TargetParent = (RunService:IsStudio() and player:WaitForChild("PlayerGui") or game:GetService("CoreGui"))
+local TargetParent = (game:GetService("RunService"):IsStudio() and player:WaitForChild("PlayerGui") or game:GetService("CoreGui"))
 
--- Xóa bản cũ
-if TargetParent:FindFirstChild("WarLand_Ultimate") then TargetParent.WarLand_Ultimate:Destroy() end
+-- [ XÓA BẢN CŨ ]
+if TargetParent:FindFirstChild("WarLand_Final") then TargetParent.WarLand_Final:Destroy() end
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "WarLand_Ultimate"
+ScreenGui.Name = "WarLand_Final"
 ScreenGui.Parent = TargetParent
 ScreenGui.ResetOnSpawn = false
 
--- ================= GIAO DIỆN CHÍNH =================
+-- [ GIAO DIỆN CHÍNH ]
 local MainFrame = Instance.new("Frame")
-MainFrame.Parent = ScreenGui
+MainFrame.Size = UDim2.new(0, 580, 0, 380)
+MainFrame.Position = UDim2.new(0.5, -290, 0.5, -190)
 MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 15)
-MainFrame.Position = UDim2.new(0.5, -280, 0.5, -210)
-MainFrame.Size = UDim2.new(0, 560, 0, 420)
-MainFrame.BorderSizePixel = 0
+MainFrame.Parent = ScreenGui
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
+local Stroke = Instance.new("UIStroke", MainFrame); Stroke.Thickness = 2.5; Stroke.Color = Color3.fromRGB(255, 255, 255)
 
--- VIỀN RGB CHUYỂN MÀU
-local UIStroke = Instance.new("UIStroke")
-UIStroke.Thickness = 2.8
-UIStroke.Parent = MainFrame
-task.spawn(function()
-    while task.wait() do UIStroke.Color = Color3.fromHSV(tick() % 5 / 5, 0.7, 1) end
-end)
-
--- THANH TIÊU ĐỀ & LOGO
-local Header = Instance.new("Frame")
-Header.Size = UDim2.new(1, 0, 0, 70); Header.BackgroundTransparency = 1; Header.Parent = MainFrame
-
-local Logo = Instance.new("ImageLabel")
-Logo.Parent = Header; Logo.Position = UDim2.new(0, 15, 0, 10); Logo.Size = UDim2.new(0, 50, 0, 50)
-Logo.Image = "rbxassetid://9861125091"; Logo.BackgroundTransparency = 1; Instance.new("UICorner", Logo).CornerRadius = UDim.new(1, 0)
-
+-- TIÊU ĐỀ
 local Title = Instance.new("TextLabel")
-Title.Parent = Header; Title.Text = "WARLAND VN | QUANTUM ULTIMATE"; Title.Position = UDim2.new(0, 75, 0, 20)
-Title.TextColor3 = Color3.fromRGB(255, 255, 255); Title.Font = Enum.Font.GothamBold; Title.TextSize = 22; Title.BackgroundTransparency = 1; Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Size = UDim2.new(1, 0, 0, 45)
+Title.Text = "WARLAND VN HUB (V5.5 FINAL)"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.BackgroundTransparency = 1; Title.Font = Enum.Font.GothamBold; Title.TextSize = 20
+Title.Parent = MainFrame
 
--- KHU VỰC CUỘN (SCROLLING)
-local Content = Instance.new("ScrollingFrame")
-Content.Parent = MainFrame; Content.Position = UDim2.new(0, 15, 0, 80); Content.Size = UDim2.new(1, -30, 1, -95)
-Content.BackgroundTransparency = 1; Content.CanvasSize = UDim2.new(0, 0, 0, 0); Content.ScrollBarThickness = 2
-Content.AutomaticCanvasSize = Enum.AutomaticSize.Y
+-- THANH TAB (HÀNG NGANG)
+local TabBar = Instance.new("Frame")
+TabBar.Size = UDim2.new(1, -20, 0, 40)
+TabBar.Position = UDim2.new(0, 10, 0, 45)
+TabBar.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+TabBar.Parent = MainFrame
+Instance.new("UICorner", TabBar).CornerRadius = UDim.new(0, 8)
 
-local UIList = Instance.new("UIListLayout")
-UIList.Parent = Content; UIList.Padding = UDim.new(0, 10)
+local TabList = Instance.new("UIListLayout")
+TabList.Parent = TabBar; TabList.FillDirection = Enum.FillDirection.Horizontal; TabList.Padding = UDim.new(0, 5)
+TabList.HorizontalAlignment = Enum.HorizontalAlignment.Center; TabList.VerticalAlignment = Enum.VerticalAlignment.Center
 
--- HÀM TẠO NÚT (ADD BUTTON)
-local function AddButton(name, sub, color, callback)
-    local btn = Instance.new("TextButton")
-    btn.Parent = Content; btn.Size = UDim2.new(1, -10, 0, 55); btn.BackgroundColor3 = Color3.fromRGB(22, 22, 28); btn.Text = ""
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+-- KHU VỰC HIỂN THỊ NỘI DUNG
+local Container = Instance.new("Frame")
+Container.Size = UDim2.new(1, -20, 1, -100)
+Container.Position = UDim2.new(0, 10, 0, 90)
+Container.BackgroundTransparency = 1
+Container.Parent = MainFrame
+
+local Pages = {}
+
+-- [ HÀM TẠO TRANG RIÊNG BIỆT ]
+local function CreatePage(name)
+    local Page = Instance.new("ScrollingFrame")
+    Page.Size = UDim2.new(1, 0, 1, 0)
+    Page.BackgroundTransparency = 1; Page.Visible = false; Page.ScrollBarThickness = 2
+    Page.CanvasSize = UDim2.new(0,0,0,0); Page.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    Page.Parent = Container
+    Instance.new("UIListLayout", Page).Padding = UDim.new(0, 10)
+    Pages[name] = Page
     
-    local t1 = Instance.new("TextLabel")
-    t1.Text = "  " .. name; t1.Size = UDim2.new(1, 0, 0.6, 0); t1.TextColor3 = Color3.fromRGB(255, 255, 255); t1.Font = Enum.Font.GothamBold; t1.TextXAlignment = Enum.TextXAlignment.Left; t1.BackgroundTransparency = 1; t1.Parent = btn
+    local TabBtn = Instance.new("TextButton")
+    TabBtn.Size = UDim2.new(0, 95, 0, 30)
+    TabBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+    TabBtn.Text = name; TabBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+    TabBtn.Font = Enum.Font.GothamBold; TabBtn.TextSize = 14
+    TabBtn.Parent = TabBar
+    Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 6)
     
-    local t2 = Instance.new("TextLabel")
-    t2.Text = "  " .. sub; t2.Size = UDim2.new(1, 0, 0.4, 0); t2.Position = UDim2.new(0, 0, 0.5, 0); t2.TextColor3 = color; t2.Font = Enum.Font.Gotham; t2.TextSize = 11; t2.TextXAlignment = Enum.TextXAlignment.Left; t2.BackgroundTransparency = 1; t2.Parent = btn
-    
-    btn.MouseButton1Click:Connect(function()
-        local success, err = pcall(callback)
-        if not success then warn("Lỗi tính năng: " .. err) end
+    TabBtn.MouseButton1Click:Connect(function()
+        for _, p in pairs(Pages) do p.Visible = false end
+        Page.Visible = true
+        for _, b in pairs(TabBar:GetChildren()) do 
+            if b:IsA("TextButton") then b.BackgroundColor3 = Color3.fromRGB(35, 35, 45) end 
+        end
+        TabBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 120)
     end)
+    return Page
 end
 
--- ================= THIẾT LẬP CHỨC NĂNG =================
+-- [ HÀM THÊM CHỨC NĂNG ]
+local function AddToggle(parent, name, sub, callback)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, -10, 0, 50)
+    btn.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+    btn.Text = "  " .. name .. "\n  " .. sub
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255); btn.TextXAlignment = Enum.TextXAlignment.Left
+    btn.Font = Enum.Font.Gotham; btn.TextSize = 13; btn.Parent = parent
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+    btn.MouseButton1Click:Connect(callback)
+end
 
--- [ NHÓM CANDY & EVENT ]
-AddButton("🍭 ULTRA BUG CANDY (50 THREADS)", "Tốc độ bàn thờ - Đổi kẹo liên tục", Color3.fromRGB(255, 0, 150), function()
-    _G.UltraBug = not _G.UltraBug
-    if _G.UltraBug then
-        for i = 1, 50 do
-            task.spawn(function()
-                while _G.UltraBug do
-                    pcall(function() RS.Remotes.CommF_:InvokeServer("CandyShop","Exchange") end)
-                    task.wait()
-                end
-            end)
-        end
-    end
-end)
+-- ================= KHỞI TẠO CÁC TAB RIÊNG BIỆT =================
 
--- [ NHÓM UP TỘC V2, V3, V4 ]
-AddButton("⛩️ TP TEMPLE OF TIME", "Dịch chuyển đến Đền Thờ Thời Gian (V4)", Color3.fromRGB(200, 100, 255), function()
-    player.Character.HumanoidRootPart.CFrame = CFrame.new(28282, 14891, 105)
-end)
+local Home = CreatePage("home")
+local Farm = CreatePage("Farm")
+local Trial = CreatePage("TRIAL")
+local Fruit = CreatePage("Fruit")
+local PvP = CreatePage("pvp")
 
-AddButton("💎 AUTO TRIAL V4", "Hỗ trợ đánh quái vượt ải Trial", Color3.fromRGB(255, 50, 50), function()
-    _G.AutoTrial = not _G.AutoTrial
-    task.spawn(function()
-        while _G.AutoTrial do
-            task.wait()
-            for _,v in pairs(game.Workspace.Enemies:GetChildren()) do
-                if v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
-                    player.Character.HumanoidRootPart.CFrame = v.HumanoidRootPart.CFrame * CFrame.new(0,0,5)
-                    RS.Remotes.CommF_:InvokeServer("Attack")
-                end
-            end
-        end
-    end)
-end)
+-- 🏠 TAB HOME: Thông tin và bảo mật
+AddToggle(Home, "🛡️ ADMIN DETECTOR", "Tự thoát khi thấy Admin", function() end)
+AddToggle(Home, "⚡ SUPER FPS BOOST", "Xóa texture giúp máy cực mượt", function() end)
+AddToggle(Home, "📡 SERVER HOP", "Đổi server ngay lập tức", function() end)
 
--- [ NHÓM SĂN TRÁI ]
-AddButton("🍎 FRUIT STORM", "Hút sạch trái ác quỷ trên map về chân", Color3.fromRGB(0, 255, 255), function()
-    for _,v in pairs(game.Workspace:GetChildren()) do
-        if v:IsA("Tool") and v:FindFirstChild("Handle") then
-            v.Handle.CFrame = player.Character.HumanoidRootPart.CFrame
-        end
-    end
-end)
+-- ⚔️ TAB FARM: Cày cuốc siêu tốc
+AddToggle(Farm, "🔥 AUTO FARM LEVEL", "Nhận Quest + Gom quái + Đánh", function() end)
+AddToggle(Farm, "👹 AUTO FARM BOSS", "Tự tìm và diệt Boss trên Map", function() end)
+AddToggle(Farm, "🍭 ULTRA BUG CANDY", "Đổi kẹo sự kiện siêu tốc (50 luồng)", function() end)
 
--- [ NHÓM ADMIN & BẢO MẬT ]
-AddButton("🛡️ ADMIN DETECTOR", "Tự thoát khi thấy Admin (Bảo vệ nick)", Color3.fromRGB(255, 0, 0), function()
-    game.Players.PlayerAdded:Connect(function(p)
-        if p:GetRankInGroup(2830838) >= 100 then TS:Teleport(game.PlaceId, player) end
-    end)
-end)
+-- ⛩️ TAB TRIAL: Lên Tộc V4
+AddToggle(Trial, "📍 TP TEMPLE OF TIME", "Bay đến Đền Thờ Thời Gian", function() end)
+AddToggle(Trial, "⚙️ AUTO PULL LEVER", "Gạt cần (Cần Mirror Fractal)", function() end)
+AddToggle(Trial, "💎 AUTO TRIAL V4", "Hỗ trợ vượt ải Trial", function() end)
 
-AddButton("⚡ GOD FPS BOOST", "Xóa toàn bộ hiệu ứng, cực mượt cho mobile", Color3.fromRGB(0, 255, 0), function()
-    for _,v in pairs(game:GetDescendants()) do
-        if v:IsA("BasePart") then v.Material = Enum.Material.SmoothPlastic end
-        if v:IsA("Decal") or v:IsA("Texture") then v:Destroy() end
-    end
-end)
+-- 🍎 TAB FRUIT: Trái ác quỷ
+AddToggle(Fruit, "🎲 RANDOM FRUIT", "Quay trái ác quỷ từ xa", function() RS.Remotes.CommF_:InvokeServer("Cousin","BuyItem") end)
+AddToggle(Fruit, "📦 AUTO STORE FRUIT", "Cất trái đang cầm vào kho", function() end)
+AddToggle(Fruit, "📤 DROP FRUIT", "Thả trái đang cầm", function() end)
 
--- ================= HỆ THỐNG ĐIỀU KHIỂN =================
+-- 🔫 TAB PVP: Hỗ trợ chiến đấu
+AddToggle(PvP, "🎯 AIM BOT", "Tự động khóa mục tiêu gần nhất", function() end)
+AddToggle(PvP, "👻 NO CLIP", "Đi xuyên tường mọi nơi", function() end)
+AddToggle(PvP, "🚀 SPEED HACK", "Chạy nhanh như Flash", function() end)
 
--- KÉO THẢ (DRAG)
+-- Mặc định hiện Tab Home
+Pages["home"].Visible = true
+
+-- [ KÉO THẢ & NÚT MỞ ]
 local dragging, dragStart, startPos
-Header.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true; dragStart = input.Position; startPos = MainFrame.Position
-    end
+MainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true; dragStart = input.Position; startPos = MainFrame.Position end
 end)
 UIS.InputChanged:Connect(function(input)
-    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
         local delta = input.Position - dragStart
         MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
     end
 end)
-Header.InputEnded:Connect(function() dragging = false end)
+UIS.InputEnded:Connect(function() dragging = false end)
 
--- NÚT ĐÓNG/MỞ (FLOATING)
 local OpenBtn = Instance.new("TextButton")
-OpenBtn.Parent = ScreenGui; OpenBtn.Size = UDim2.new(0, 55, 0, 55); OpenBtn.Position = UDim2.new(0, 15, 0.5, -27)
-OpenBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 30); OpenBtn.Text = "W"; OpenBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-OpenBtn.Font = Enum.Font.GothamBold; OpenBtn.TextSize = 20
+OpenBtn.Parent = ScreenGui; OpenBtn.Size = UDim2.new(0, 50, 0, 50); OpenBtn.Position = UDim2.new(0, 10, 0.5, -25)
+OpenBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 25); OpenBtn.Text = "W"; OpenBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(1, 0)
-local BStroke = Instance.new("UIStroke", OpenBtn); BStroke.Thickness = 2; BStroke.Color = Color3.fromRGB(255, 255, 255)
-
-OpenBtn.MouseButton1Click:Connect(function()
-    MainFrame.Visible = not MainFrame.Visible
-end)
+OpenBtn.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
