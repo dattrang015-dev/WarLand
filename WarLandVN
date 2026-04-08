@@ -3,7 +3,6 @@ local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/shle
 local Window = Rayfield:CreateWindow({
    Name = "WarLand VN | Blox Fruits",
    LoadingTitle = "Đang khởi động hệ thống...",
-   -- Đã bỏ LoadingSubtitle theo ý bạn
    ConfigurationSaving = {
       Enabled = true,
       FolderName = "WarLand_Data",
@@ -16,7 +15,7 @@ local Window = Rayfield:CreateWindow({
    },
 })
 
--- TAB CÀY CUỐC
+-- ================= TAB CÀY CUỐC =================
 local MainTab = Window:CreateTab("Cày Cuốc", 4483362458)
 
 _G.AutoClick = false
@@ -29,8 +28,8 @@ MainTab:CreateToggle({
       spawn(function()
          while _G.AutoClick do
             task.wait(0.1)
-            -- Mã đánh mẫu
             pcall(function()
+                -- Mã đánh chuẩn cho Blox Fruits
                 game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Attack")
             end)
          end
@@ -38,7 +37,7 @@ MainTab:CreateToggle({
    end,
 })
 
--- TAB NGƯỜI CHƠI
+-- ================= TAB NGƯỜI CHƠI =================
 local PlayerTab = Window:CreateTab("Người Chơi", 4483362458)
 
 PlayerTab:CreateSlider({
@@ -54,10 +53,11 @@ PlayerTab:CreateSlider({
 })
 
 PlayerTab:CreateButton({
-   Name = "Nhảy cực cao",
+   Name = "Nhảy cao",
    Callback = function()
-       game.Players.LocalPlayer.Character.Humanoid.JumpPower = 150
+       game.Players.LocalPlayer.Character.Humanoid.JumpPower = 100
    end,
 })
 
+-- QUAN TRỌNG: Dòng này để hoàn tất nạp giao diện
 Rayfield:LoadConfiguration()
