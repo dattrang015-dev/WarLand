@@ -1,6 +1,6 @@
 --[[ 
-    👑 WARLAND VN HUB V2 | DEFINITIVE EDITION (NO LOADSTRING)
-    CHỨC NĂNG ĐƯỢC VIẾT TRỰC TIẾP VÀO SCRIPT - KHÔNG LO LỖI LINK
+    👑 WARLAND VN HUB V2 | DEFINITIVE EDITION (REDZ ENGINE)
+    ĐÃ SỬA LỖI: THAY THẾ CHỨC NĂNG FARM NHẤN LÀ CHẠY
 ]]
 
 local player = game.Players.LocalPlayer
@@ -14,18 +14,6 @@ if TargetParent:FindFirstChild("WarLand_Definitive_Full") then TargetParent.WarL
 local ScreenGui = Instance.new("ScreenGui", TargetParent)
 ScreenGui.Name = "WarLand_Definitive_Full"
 ScreenGui.ResetOnSpawn = false
-
--- [ BIẾN ĐIỀU KHIỂN ]
-_G.AutoFarm = false
-_G.FastAttack = false
-
--- Anti-AFK (Để treo máy đi học)
-if _G.AntiAFKSignal then _G.AntiAFKSignal:Disconnect() end
-_G.AntiAFKSignal = player.Idled:Connect(function()
-    game:GetService("VirtualUser"):Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-    task.wait(1)
-    game:GetService("VirtualUser"):Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-end)
 
 -- [ HÀM KÉO THẢ ]
 local function MakeDraggable(gui)
@@ -55,7 +43,7 @@ local Stroke = Instance.new("UIStroke", MainFrame); Stroke.Thickness = 3.5; Stro
 local Header = Instance.new("Frame", MainFrame)
 Header.Size = UDim2.new(1, 0, 0, 60); Header.BackgroundTransparency = 1
 local Title = Instance.new("TextLabel", Header)
-Title.Size = UDim2.new(1, 0, 1, 0); Title.Text = "WARLAND VN HUB V2 - NO LOADSTRING"; Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Size = UDim2.new(1, 0, 1, 0); Title.Text = "WARLAND VN HUB V2 - FIXED"; Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.Font = "GothamBold"; Title.TextSize = 26
 MakeDraggable(MainFrame)
 
@@ -98,29 +86,17 @@ end
 local Home = CreatePage("Home")
 local Farm = CreatePage("Farm")
 
--- ⚔️ LOGIC AUTO CLICK (Đã bỏ loadstring)
-local function AutoClick()
-    task.spawn(function()
-        while _G.AutoFarm do
-            local virtualUser = game:GetService("VirtualUser")
-            virtualUser:CaptureController()
-            virtualUser:ClickButton1(Vector2.new(851, 158))
-            task.wait(0.1)
-        end
-    end)
-end
-
--- ⚔️ CHỨC NĂNG TAB FARM
-AddToggle(Farm, "🔥 BẬT AUTO CLICK", "Tự đấm liên tục", function()
-    _G.AutoFarm = not _G.AutoFarm
-    if _G.AutoFarm then AutoClick() end
+-- ⚔️ CHỨC NĂNG FARM (Sửa lỗi dùng Redz Hub)
+AddToggle(Farm, "🔥 KÍCH HOẠT AUTO FARM", "Dùng lõi Redz Hub cực mượt", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/REDZ393/RedzHubV2/main/Main.lua"))()
 end)
 
-AddToggle(Home, "⚡ FIX LAG", "Mượt máy để treo", function()
-    settings().Rendering.QualityLevel = 1
-    for _, v in pairs(game:GetDescendants()) do
-        if v:IsA("Part") or v:IsA("MeshPart") then v.Material = "SmoothPlastic" end
-    end
+-- 🏠 CHỨC NĂNG HOME
+AddToggle(Home, "🕒 ANTI-AFK", "Chống văng khi đi học", function()
+    local vu = game:GetService("VirtualUser")
+    player.Idled:Connect(function()
+        vu:CaptureController(); vu:ClickButton2(Vector2.new())
+    end)
 end)
 
 -- [ 💠 NÚT MỞ W ]
