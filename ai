@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Đoán Chữ Số</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>AI Nhận Diện Chữ Số</h1>
+        <canvas id="canvas" width="280" height="280"></canvas>
+        <div class="controls">
+            <button id="clear-btn">Xóa</button>
+            <button id="predict-btn">AI Đoán Đi!</button>
+        </div>
+        <h2 id="result">Kết quả: ...</h2>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
