@@ -1,17 +1,17 @@
--- [[ 🚀 WARLAND VN - V23: RAINBOW TITLE & FULL DRAGGABLE ]]
+-- [[ 🚀 WARLAND VN - V48: FULL SLIDERS + PLAYER MENU (NO KILL) ]]
 
 local player = game.Players.LocalPlayer
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local TargetParent = (game:GetService("CoreGui") or player:WaitForChild("PlayerGui"))
 
-if TargetParent:FindFirstChild("WarLand_Pro_V23") then TargetParent.WarLand_Pro_V23:Destroy() end
+if TargetParent:FindFirstChild("WarLand_V48") then TargetParent.WarLand_V48:Destroy() end
 
 local ScreenGui = Instance.new("ScreenGui", TargetParent)
-ScreenGui.Name = "WarLand_Pro_V23"
+ScreenGui.Name = "WarLand_V48"
 ScreenGui.ResetOnSpawn = false
 
--- [ BIẾN CÀI ĐẶT ]
+-- [ BIẾN HỆ THỐNG ]
 _G.WalkSpeed = 16
 _G.JumpPower = 50
 _G.FlySpeed = 150
@@ -19,178 +19,132 @@ _G.Flying = false
 _G.EspEnabled = false
 local SelectedPlayer = nil
 
--- [ HÀM KÉO THẢ TỰ DO ]
+-- [ HÀM KÉO THẢ ]
 local function MakeDraggable(obj)
     local dragging, dragInput, dragStart, startPos
     obj.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             dragging = true; dragStart = input.Position; startPos = obj.Position
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then dragging = false end
-            end)
+            input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
         end
     end)
-    obj.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end
-    end)
-    UserInputService.InputChanged:Connect(function(input)
-        if input == dragInput and dragging then
-            local delta = input.Position - dragStart
-            obj.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-        end
-    end)
+    obj.InputChanged:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end end)
+    UserInputService.InputChanged:Connect(function(input) if input == dragInput and dragging then local delta = input.Position - dragStart; obj.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y) end end)
 end
 
 -- [ GIAO DIỆN CHÍNH ]
 local Main = Instance.new("Frame", ScreenGui)
-Main.Size = UDim2.new(0, 500, 0, 380)
-Main.Position = UDim2.new(0.5, -250, 0.5, -190)
-Main.BackgroundColor3 = Color3.fromRGB(10, 10, 15); Main.BorderSizePixel = 0
+Main.Size = UDim2.new(0, 460, 0, 460); Main.Position = UDim2.new(0.5, -230, 0.5, -230)
+Main.BackgroundColor3 = Color3.fromRGB(15, 15, 20); Main.BorderSizePixel = 0; Main.Visible = false
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 15)
-local Stroke = Instance.new("UIStroke", Main); Stroke.Thickness = 3; Stroke.Color = Color3.fromRGB(0, 255, 255)
+local Stroke = Instance.new("UIStroke", Main); Stroke.Thickness = 2.5; Stroke.Color = Color3.fromRGB(0, 255, 255)
 MakeDraggable(Main)
 
--- [ NÚT ĐÓNG/MỞ ]
-local ToggleBtn = Instance.new("TextButton", ScreenGui)
-ToggleBtn.Size = UDim2.new(0, 70, 0, 70); ToggleBtn.Position = UDim2.new(0, 30, 0.5, -35)
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 25); ToggleBtn.Text = "CLOSE"; ToggleBtn.TextColor3 = Color3.fromRGB(0, 255, 255)
-ToggleBtn.Font = "GothamBold"; ToggleBtn.TextSize = 16; Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(1, 0)
-local TStroke = Instance.new("UIStroke", ToggleBtn); TStroke.Color = Color3.fromRGB(0, 255, 255); TStroke.Thickness = 2
-MakeDraggable(ToggleBtn)
+-- [ NÚT MỞ ]
+local Toggle = Instance.new("TextButton", ScreenGui)
+Toggle.Size = UDim2.new(0, 55, 0, 55); Toggle.Position = UDim2.new(0, 10, 0.5, -27)
+Toggle.Text = "WL"; Toggle.Font = "GothamBold"; Toggle.TextSize = 20; Toggle.BackgroundColor3 = Color3.fromRGB(20, 20, 25); Toggle.TextColor3 = Color3.fromRGB(0, 255, 255)
+Instance.new("UICorner", Toggle).CornerRadius = UDim.new(1, 0)
+MakeDraggable(Toggle)
+Toggle.MouseButton1Click:Connect(function() Main.Visible = not Main.Visible end)
 
-ToggleBtn.MouseButton1Click:Connect(function()
-    Main.Visible = not Main.Visible
-    ToggleBtn.Text = Main.Visible and "CLOSE" or "OPEN"
-end)
+-- [ TABS ]
+local TabBar = Instance.new("Frame", Main); TabBar.Size = UDim2.new(1, 0, 0, 45); TabBar.BackgroundTransparency = 1
+local Pages = Instance.new("Frame", Main); Pages.Size = UDim2.new(1, 0, 1, -55); Pages.Position = UDim2.new(0, 0, 0, 55); Pages.BackgroundTransparency = 1
 
--- [ TIÊU ĐỀ RAINBOW ]
-local Header = Instance.new("TextLabel", Main)
-Header.Size = UDim2.new(1, 0, 0, 50); Header.Text = "WARLAND VN"; Header.TextColor3 = Color3.fromRGB(255, 255, 255)
-Header.BackgroundColor3 = Color3.fromRGB(20, 20, 25); Header.Font = "GothamBold"; Header.TextSize = 26 -- Chữ rất bự
-Instance.new("UICorner", Header)
-
-task.spawn(function()
-    while task.wait() do
-        local hue = tick() % 5 / 5
-        Header.TextColor3 = Color3.fromHSV(hue, 1, 1)
-        Stroke.Color = Color3.fromHSV(hue, 1, 1)
-    end
-end)
-
--- [ THANH TAB ]
-local TabContainer = Instance.new("Frame", Main)
-TabContainer.Size = UDim2.new(1, 0, 0, 45); TabContainer.Position = UDim2.new(0, 0, 0, 55)
-TabContainer.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
-
-local ContentContainer = Instance.new("Frame", Main)
-ContentContainer.Size = UDim2.new(1, 0, 1, -110); ContentContainer.Position = UDim2.new(0, 0, 0, 110)
-ContentContainer.BackgroundTransparency = 1
-
-local Tabs = {}
-local function CreateTab(name, pos_x)
-    local TabBtn = Instance.new("TextButton", TabContainer)
-    TabBtn.Size = UDim2.new(0.333, 0, 1, 0); TabBtn.Position = UDim2.new(pos_x, 0, 0, 0)
-    TabBtn.Text = name:upper(); TabBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 40); TabBtn.TextColor3 = Color3.fromRGB(255, 255, 255); TabBtn.Font = "GothamBold"; TabBtn.TextSize = 18; TabBtn.BorderSizePixel = 0
-    
-    local Page = Instance.new("Frame", ContentContainer)
-    Page.Size = UDim2.new(1, 0, 1, 0); Page.Visible = false; Page.BackgroundTransparency = 1
-    Tabs[name] = {Btn = TabBtn, Page = Page}
-    
-    TabBtn.MouseButton1Click:Connect(function()
-        for _, t in pairs(Tabs) do t.Page.Visible = false; t.Btn.BackgroundColor3 = Color3.fromRGB(35, 35, 40); t.Btn.TextColor3 = Color3.fromRGB(255,255,255) end
-        Page.Visible = true; TabBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255); TabBtn.TextColor3 = Color3.fromRGB(0,0,0)
+local function CreateTab(name, x)
+    local btn = Instance.new("TextButton", TabBar); btn.Size = UDim2.new(0.333, 0, 1, 0); btn.Position = UDim2.new(x, 0, 0, 0); btn.Text = name; btn.Font = "GothamBold"; btn.TextSize = 18; btn.BackgroundColor3 = Color3.fromRGB(30, 30, 35); btn.TextColor3 = Color3.fromRGB(255,255,255)
+    local pg = Instance.new("ScrollingFrame", Pages); pg.Size = UDim2.new(1, 0, 1, 0); pg.Visible = false; pg.BackgroundTransparency = 1; pg.ScrollBarThickness = 0
+    Instance.new("UIListLayout", pg).Padding = UDim.new(0, 12); Instance.new("UIPadding", pg).PaddingLeft = UDim.new(0, 15)
+    btn.MouseButton1Click:Connect(function()
+        for _, v in pairs(Pages:GetChildren()) do if v:IsA("ScrollingFrame") then v.Visible = false end end
+        for _, v in pairs(TabBar:GetChildren()) do if v:IsA("TextButton") then v.BackgroundColor3 = Color3.fromRGB(30,30,35); v.TextColor3 = Color3.fromRGB(255,255,255) end end
+        pg.Visible = true; btn.BackgroundColor3 = Color3.fromRGB(0, 255, 255); btn.TextColor3 = Color3.fromRGB(0,0,0)
     end)
-    return Page
+    return pg, btn
 end
 
-local HomePage = CreateTab("home", 0)
-local TpPage = CreateTab("tp", 0.333)
-local EspPage = CreateTab("esp", 0.666)
-Tabs["home"].Page.Visible = true; Tabs["home"].Btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255); Tabs["home"].Btn.TextColor3 = Color3.fromRGB(0,0,0)
+local PageHome, _ = CreateTab("HOME", 0)
+local PagePlayer, _ = CreateTab("PLAYER", 0.333)
+local PageESP, _ = CreateTab("ESP", 0.666)
+PageHome.Visible = true
 
--- [[ 🏠 TAB HOME ]]
-local function CreateSlider(parent, name, pos, min, max, default, callback)
-    local Lbl = Instance.new("TextLabel", parent); Lbl.Size = UDim2.new(0.9, 0, 0, 30); Lbl.Position = pos; Lbl.Text = name..": "..default; Lbl.TextColor3 = Color3.fromRGB(255,255,255); Lbl.BackgroundTransparency = 1; Lbl.Font = "GothamBold"; Lbl.TextSize = 16
-    local Sld = Instance.new("TextButton", parent); Sld.Size = UDim2.new(0.8, 0, 0, 10); Sld.Position = pos + UDim2.new(0.05, 0, 0, 35); Sld.BackgroundColor3 = Color3.fromRGB(50,50,55); Sld.Text = ""; Instance.new("UICorner", Sld)
-    local Dot = Instance.new("Frame", Sld); Dot.Size = UDim2.new(0, 20, 0, 20); Dot.Position = UDim2.new((default-min)/(max-min), -10, 0.5, -10); Dot.BackgroundColor3 = Color3.fromRGB(255, 255, 255); Instance.new("UICorner", Dot)
-    Sld.MouseButton1Down:Connect(function()
-        local con; con = RunService.RenderStepped:Connect(function()
-            if UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
-                local p = math.clamp((UserInputService:GetMouseLocation().X - Sld.AbsolutePosition.X) / Sld.AbsoluteSize.X, 0, 1)
-                Dot.Position = UDim2.new(p, -10, 0.5, -10); local v = math.floor(min + (p * (max-min))); Lbl.Text = name..": "..v; callback(v)
-            else con:Disconnect() end
-        end)
-    end)
+-- [[ 🏠 TAB HOME (HÀM SLIDER CHUẨN) ]]
+local function CreateSlider(parent, name, min, max, default, callback)
+    local F = Instance.new("Frame", parent); F.Size = UDim2.new(0.95, 0, 0, 75); F.BackgroundTransparency = 1
+    local L = Instance.new("TextLabel", F); L.Size = UDim2.new(1, 0, 0, 30); L.Text = name..": "..default; L.TextColor3 = Color3.fromRGB(255,255,255); L.Font = "GothamBold"; L.TextSize = 22; L.BackgroundTransparency = 1
+    local S = Instance.new("TextButton", F); S.Size = UDim2.new(0.9, 0, 0, 12); S.Position = UDim2.new(0.05, 0, 0, 42); S.Text = ""; S.BackgroundColor3 = Color3.fromRGB(50,50,50); Instance.new("UICorner", S)
+    local D = Instance.new("Frame", S); D.Size = UDim2.new(0, 26, 0, 26); D.Position = UDim2.new((default-min)/(max-min), -13, 0.5, -13); D.BackgroundColor3 = Color3.fromRGB(0, 255, 255); Instance.new("UICorner", D)
+    S.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then local move; move = RunService.RenderStepped:Connect(function() local p = math.clamp((UserInputService:GetMouseLocation().X - S.AbsolutePosition.X) / S.AbsoluteSize.X, 0, 1); D.Position = UDim2.new(p, -13, 0.5, -13); local v = math.floor(min + (p * (max-min))); L.Text = name..": "..v; callback(v) end); input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then move:Disconnect() end end) end end)
 end
 
-CreateSlider(HomePage, "TỐC ĐỘ CHẠY", UDim2.new(0.05,0,0,10), 16, 500, _G.WalkSpeed, function(v) _G.WalkSpeed = v end)
-CreateSlider(HomePage, "NHẢY CAO", UDim2.new(0.05,0,0,75), 50, 700, _G.JumpPower, function(v) _G.JumpPower = v end)
-CreateSlider(HomePage, "TỐC ĐỘ BAY", UDim2.new(0.05,0,0,140), 50, 1000, _G.FlySpeed, function(v) _G.FlySpeed = v end)
+CreateSlider(PageHome, "Tốc Độ Đi", 16, 500, _G.WalkSpeed, function(v) _G.WalkSpeed = v end)
+CreateSlider(PageHome, "Nhảy Cao", 50, 600, _G.JumpPower, function(v) _G.JumpPower = v end)
+CreateSlider(PageHome, "Tốc Độ Fly", 50, 1000, _G.FlySpeed, function(v) _G.FlySpeed = v end) -- THANH CHỈNH FLY SPEED ĐÂY RỒI!
 
-local FlyTgl = Instance.new("TextButton", HomePage); FlyTgl.Size = UDim2.new(0.4, 0, 0, 50); FlyTgl.Position = UDim2.new(0.3, 0, 0, 210); FlyTgl.Text = "FLY: OFF"; FlyTgl.BackgroundColor3 = Color3.fromRGB(50,50,60); FlyTgl.TextColor3 = Color3.fromRGB(255,255,255); FlyTgl.Font = "GothamBold"; FlyTgl.TextSize = 18; Instance.new("UICorner", FlyTgl)
-FlyTgl.MouseButton1Click:Connect(function() _G.Flying = not _G.Flying; FlyTgl.Text = _G.Flying and "FLY: ON" or "FLY: OFF"; FlyTgl.BackgroundColor3 = _G.Flying and Color3.fromRGB(0, 255, 120) or Color3.fromRGB(50,50,60) end)
+local FlyTgl = Instance.new("TextButton", PageHome); FlyTgl.Size = UDim2.new(0.95, 0, 0, 65); FlyTgl.Text = "FLY (CAM): OFF"; FlyTgl.Font = "GothamBold"; FlyTgl.TextSize = 22; FlyTgl.BackgroundColor3 = Color3.fromRGB(40,40,45); FlyTgl.TextColor3 = Color3.fromRGB(255,255,255); Instance.new("UICorner", FlyTgl)
+FlyTgl.MouseButton1Click:Connect(function() _G.Flying = not _G.Flying; FlyTgl.Text = _G.Flying and "FLY: ON" or "FLY: OFF"; FlyTgl.BackgroundColor3 = _G.Flying and Color3.fromRGB(0, 180, 100) or Color3.fromRGB(40,40,45) end)
 
--- [[ 📍 TAB TP ]]
-local PList = Instance.new("ScrollingFrame", TpPage); PList.Size = UDim2.new(0.45, 0, 0.9, 0); PList.Position = UDim2.new(0.03, 0, 0.05, 0); PList.BackgroundColor3 = Color3.fromRGB(5,5,10); PList.ScrollBarThickness = 5; Instance.new("UIListLayout", PList).Padding = UDim.new(0, 5)
-local TgtLbl = Instance.new("TextLabel", TpPage); TgtLbl.Size = UDim2.new(0.48, 0, 0, 45); TgtLbl.Position = UDim2.new(0.5, 0, 0.05, 0); TgtLbl.Text = "Mục tiêu: None"; TgtLbl.TextColor3 = Color3.fromRGB(255,255,0); TgtLbl.TextSize = 18; TgtLbl.Font = "GothamBold"; TgtLbl.BackgroundTransparency = 1
+-- [[ 📍 TAB PLAYER ]]
+local SelectedMenu = Instance.new("Frame", PagePlayer); SelectedMenu.Size = UDim2.new(0.95, 0, 0, 55); SelectedMenu.BackgroundColor3 = Color3.fromRGB(255, 255, 255); SelectedMenu.BackgroundTransparency = 0.9; Instance.new("UICorner", SelectedMenu)
+local NameDisplay = Instance.new("TextLabel", SelectedMenu); NameDisplay.Size = UDim2.new(1, 0, 1, 0); NameDisplay.Text = "🎯 CHỌN PLAYER"; NameDisplay.TextColor3 = Color3.fromRGB(0, 255, 255); NameDisplay.Font = "GothamBold"; NameDisplay.TextSize = 22; NameDisplay.BackgroundTransparency = 1
 
-local function UpdPList()
-    for _,v in pairs(PList:GetChildren()) do if v:IsA("TextButton") then v:Destroy() end end
-    for _,plr in pairs(game.Players:GetPlayers()) do if plr ~= player then
-        local b = Instance.new("TextButton", PList); b.Size = UDim2.new(1, -10, 0, 40); b.Text = plr.DisplayName; b.BackgroundColor3 = Color3.fromRGB(40,40,50); b.TextColor3 = Color3.fromRGB(255,255,255); b.Font = "GothamBold"; b.TextSize = 15; Instance.new("UICorner", b)
-        b.MouseButton1Click:Connect(function() SelectedPlayer = plr; TgtLbl.Text = "Mục tiêu: "..plr.DisplayName end)
+local PListFrame = Instance.new("ScrollingFrame", PagePlayer); PListFrame.Size = UDim2.new(0.95, 0, 0, 120); PListFrame.BackgroundTransparency = 0.95; PListFrame.ScrollBarThickness = 2; PListFrame.CanvasSize = UDim2.new(0,0,5,0)
+Instance.new("UIListLayout", PListFrame).Padding = UDim.new(0, 5)
+
+local function UpdP()
+    for _,v in pairs(PListFrame:GetChildren()) do if v:IsA("TextButton") then v:Destroy() end end
+    for _,p in pairs(game.Players:GetPlayers()) do if p ~= player then
+        local b = Instance.new("TextButton", PListFrame); b.Size = UDim2.new(1, 0, 0, 35); b.Text = p.DisplayName; b.Font = "GothamBold"; b.TextSize = 17; b.BackgroundColor3 = Color3.fromRGB(40,40,50); b.TextColor3 = Color3.fromRGB(255,255,255); Instance.new("UICorner", b)
+        b.MouseButton1Click:Connect(function() SelectedPlayer = p; NameDisplay.Text = "🎯 " .. p.DisplayName end)
     end end
 end
-UpdPList(); game.Players.PlayerAdded:Connect(UpdPList); game.Players.PlayerRemoving:Connect(UpdPList)
+UpdP(); game.Players.PlayerAdded:Connect(UpdP); game.Players.PlayerRemoving:Connect(UpdP)
 
-local TPTo = Instance.new("TextButton", TpPage); TPTo.Size = UDim2.new(0.45, 0, 0, 50); TPTo.Position = UDim2.new(0.52, 0, 0.35, 0); TPTo.Text = "TP ĐẾN HỌ"; TPTo.BackgroundColor3 = Color3.fromRGB(0, 120, 255); TPTo.TextColor3 = Color3.fromRGB(255,255,255); TPTo.Font = "GothamBold"; TPTo.TextSize = 16; Instance.new("UICorner", TPTo)
-local Bring = Instance.new("TextButton", TpPage); Bring.Size = UDim2.new(0.45, 0, 0, 50); Bring.Position = UDim2.new(0.52, 0, 0.6, 0); Bring.Text = "KÉO HỌ ĐẾN"; Bring.BackgroundColor3 = Color3.fromRGB(255, 80, 0); Bring.TextColor3 = Color3.fromRGB(255,255,255); Bring.Font = "GothamBold"; Bring.TextSize = 16; Instance.new("UICorner", Bring)
-
-TPTo.MouseButton1Click:Connect(function() if SelectedPlayer and SelectedPlayer.Character then player.Character.HumanoidRootPart.CFrame = SelectedPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, 3) end end)
-Bring.MouseButton1Click:Connect(function() if SelectedPlayer and SelectedPlayer.Character then SelectedPlayer.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, -3) end end)
+local function CreateActionBtn(txt, color, func)
+    local b = Instance.new("TextButton", PagePlayer); b.Size = UDim2.new(0.95, 0, 0, 60); b.Text = txt; b.BackgroundColor3 = color; b.Font = "GothamBold"; b.TextSize = 23; b.TextColor3 = Color3.fromRGB(255,255,255); Instance.new("UICorner", b)
+    b.MouseButton1Click:Connect(func)
+end
+CreateActionBtn("TELEPORT ĐẾN HỌ", Color3.fromRGB(0, 100, 255), function() if SelectedPlayer and SelectedPlayer.Character then player.Character.HumanoidRootPart.CFrame = SelectedPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0,0,3) end end)
+CreateActionBtn("BRING (MANG TỚI)", Color3.fromRGB(0, 150, 100), function() if SelectedPlayer and SelectedPlayer.Character and SelectedPlayer.Character:FindFirstChild("HumanoidRootPart") then SelectedPlayer.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, -3) end end)
 
 -- [[ 👁 TAB ESP ]]
-local EspTgl = Instance.new("TextButton", EspPage); EspTgl.Size = UDim2.new(0.6, 0, 0, 70); EspTgl.Position = UDim2.new(0.2, 0, 0.3, 0); EspTgl.Text = "BẬT/TẮT ESP"; EspTgl.BackgroundColor3 = Color3.fromRGB(50,50,60); EspTgl.TextColor3 = Color3.fromRGB(255,255,255); EspTgl.Font = "GothamBold"; EspTgl.TextSize = 22; Instance.new("UICorner", EspTgl)
-EspTgl.MouseButton1Click:Connect(function() _G.EspEnabled = not _G.EspEnabled; EspTgl.BackgroundColor3 = _G.EspEnabled and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(50,50,60) end)
+local EspTglBtn = Instance.new("TextButton", PageESP); EspTglBtn.Size = UDim2.new(0.95, 0, 0, 65); EspTglBtn.Text = "BẬT ESP"; EspTglBtn.BackgroundColor3 = Color3.fromRGB(40,40,45); EspTglBtn.Font = "GothamBold"; EspTglBtn.TextSize = 22; Instance.new("UICorner", EspTglBtn)
+EspTglBtn.MouseButton1Click:Connect(function() _G.EspEnabled = not _G.EspEnabled; EspTglBtn.Text = _G.EspEnabled and "ESP: ĐANG BẬT" or "ESP: ĐANG TẮT"; EspTglBtn.BackgroundColor3 = _G.EspEnabled and Color3.fromRGB(0, 150, 100) or Color3.fromRGB(40,40,45) end)
 
--- [ LOGIC HỆ THỐNG ]
-RunService.Stepped:Connect(function()
-    pcall(function()
-        local hum = player.Character.Humanoid
-        if _G.WalkSpeed > 16 and not _G.Flying and hum.MoveDirection.Magnitude > 0 then
-            player.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame + (hum.MoveDirection * (_G.WalkSpeed / 45))
-        end
-        hum.JumpPower = _G.JumpPower; hum.UseJumpPower = true
-    end)
-end)
-
+-- [[ 🚀 LOGIC HỆ THỐNG ]]
 task.spawn(function()
+    local bv, bg
     while task.wait() do
-        if _G.Flying then
-            local root = player.Character.HumanoidRootPart
-            local bv = root:FindFirstChild("WarVel") or Instance.new("BodyVelocity", root); bv.Name = "WarVel"; bv.MaxForce = Vector3.new(1e9, 1e9, 1e9)
-            local bg = root:FindFirstChild("WarGyro") or Instance.new("BodyGyro", root); bg.Name = "WarGyro"; bg.MaxTorque = Vector3.new(1e9, 1e9, 1e9)
-            local cam = workspace.CurrentCamera
-            if player.Character.Humanoid.MoveDirection.Magnitude > 0 then 
-                bv.Velocity = cam.CFrame:VectorToWorldSpace(Vector3.new(UserInputService:IsKeyDown(Enum.KeyCode.D) and 1 or (UserInputService:IsKeyDown(Enum.KeyCode.A) and -1 or 0), 0, UserInputService:IsKeyDown(Enum.KeyCode.S) and 1 or (UserInputService:IsKeyDown(Enum.KeyCode.W) and -1 or 0))).Unit * _G.FlySpeed
-            else bv.Velocity = Vector3.new(0, 0.1, 0) end
-            bg.CFrame = cam.CFrame
-        else
-            if player.Character.HumanoidRootPart:FindFirstChild("WarVel") then player.Character.HumanoidRootPart.WarVel:Destroy() end
-            if player.Character.HumanoidRootPart:FindFirstChild("WarGyro") then player.Character.HumanoidRootPart.WarGyro:Destroy() end
-        end
+        if _G.Flying and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local root = player.Character.HumanoidRootPart; local hum = player.Character.Humanoid; local cam = workspace.CurrentCamera
+            if not bv then bv = Instance.new("BodyVelocity", root); bv.MaxForce = Vector3.new(1e9, 1e9, 1e9); bg = Instance.new("BodyGyro", root); bg.MaxTorque = Vector3.new(1e9, 1e9, 1e9) end
+            local camLook = cam.CFrame.LookVector; local moveDir = hum.MoveDirection
+            if moveDir.Magnitude > 0 then bv.Velocity = Vector3.new(moveDir.X * _G.FlySpeed, camLook.Y * _G.FlySpeed, moveDir.Z * _G.FlySpeed) else bv.Velocity = Vector3.new(0, 0, 0) end
+            bg.CFrame = CFrame.new(root.Position, root.Position + Vector3.new(camLook.X, 0, camLook.Z))
+        else if bv then bv:Destroy(); bv = nil; bg:Destroy(); bg = nil end end
     end
 end)
 
 local function AddEsp(p)
-    local b = Instance.new("BillboardGui", ScreenGui); b.AlwaysOnTop = true; b.Size = UDim2.new(0, 200, 0, 50)
-    local l = Instance.new("TextLabel", b); l.Size = UDim2.new(1, 0, 1, 0); l.BackgroundTransparency = 1; l.TextColor3 = Color3.fromRGB(255, 255, 255); l.TextSize = 16; l.Font = "GothamBold"
+    local b = Instance.new("BillboardGui", ScreenGui); b.AlwaysOnTop = true; b.Size = UDim2.new(0, 200, 0, 50); b.ExtentsOffset = Vector3.new(0, 3, 0)
+    local l = Instance.new("TextLabel", b); l.Size = UDim2.new(1, 0, 1, 0); l.BackgroundTransparency = 1; l.TextColor3 = Color3.fromRGB(255, 255, 255); l.TextSize = 18; l.Font = "GothamBold"
     RunService.RenderStepped:Connect(function()
         if _G.EspEnabled and p.Character and p.Character:FindFirstChild("Head") then
             b.Adornee = p.Character.Head; b.Enabled = true
-            l.Text = p.DisplayName .. " [" .. math.floor((player.Character.HumanoidRootPart.Position - p.Character.HumanoidRootPart.Position).Magnitude) .. "m]"
+            l.Text = p.DisplayName .. " [" .. math.floor((player.Character.HumanoidRootPart.Position - p.Character.Head.Position).Magnitude) .. "m]"
         else b.Enabled = false end
     end)
 end
 for _, v in pairs(game.Players:GetPlayers()) do if v ~= player then AddEsp(v) end end
 game.Players.PlayerAdded:Connect(AddEsp)
+
+RunService.RenderStepped:Connect(function()
+    if player.Character and player.Character:FindFirstChild("Humanoid") then
+        local hum = player.Character.Humanoid
+        if _G.WalkSpeed > 16 and not _G.Flying and hum.MoveDirection.Magnitude > 0 then
+            player.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame + (hum.MoveDirection * (_G.WalkSpeed / 45))
+        end
+        hum.JumpPower = _G.JumpPower; hum.UseJumpPower = true
+    end
+end)
