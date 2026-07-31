@@ -1,36 +1,40 @@
 -- =====================================================================
--- Roblox Client Script: Giao diện 6 Tab (Chống trùng lặp dữ liệu)
+-- Roblox Client Script: Giao diện 8 Tab (Tách riêng ServerStorage)
 -- =====================================================================
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ReplicatedFirst = game:GetService("ReplicatedFirst")
 local ServerStorage = game:GetService("ServerStorage")
+local ServerScriptService = game:GetService("ServerScriptService")
 local Lighting = game:GetService("Lighting")
 local Workspace = game:GetService("Workspace")
+local StarterPlayer = game:GetService("StarterPlayer")
+local StarterGui = game:GetService("StarterGui")
+local SoundService = game:GetService("SoundService")
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
 -- Xóa GUI cũ nếu chạy lại
-if PlayerGui:FindFirstChild("SixTabScannerGui") then
-    PlayerGui.SixTabScannerGui:Destroy()
+if PlayerGui:FindFirstChild("EightTabScannerGui") then
+    PlayerGui.EightTabScannerGui:Destroy()
 end
 
 -- 1. Tạo ScreenGui chính
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "SixTabScannerGui"
+screenGui.Name = "EightTabScannerGui"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = PlayerGui
 
 -- Khung menu chính
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 480, 0, 350)
-mainFrame.Position = UDim2.new(0.5, -240, 0.5, -175)
+mainFrame.Size = UDim2.new(0, 560, 0, 360)
+mainFrame.Position = UDim2.new(0.5, -280, 0.5, -180)
 mainFrame.BackgroundColor3 = Color3.fromRGB(28, 28, 35)
 mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
-mainFrame.Draggable = true -- Hỗ trợ kéo thả trên mobile
+mainFrame.Draggable = true
 mainFrame.Parent = screenGui
 
 local mainCorner = Instance.new("UICorner")
@@ -44,7 +48,7 @@ titleLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
 titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 titleLabel.TextSize = 14
 titleLabel.Font = Enum.Font.SourceSansBold
-titleLabel.Text = "⚡ HỆ THỐNG QUÉT GAME (CHỐNG TRÙNG LẶP)"
+titleLabel.Text = "⚡ HỆ THỐNG QUÉT GAME (8 TABS - TÁCH SERVERSTORAGE)"
 titleLabel.Parent = mainFrame
 
 local titleCorner = Instance.new("UICorner")
@@ -62,38 +66,42 @@ closeBtn.Font = Enum.Font.SourceSansBold
 closeBtn.Text = "X"
 closeBtn.Parent = titleLabel
 
--- 2. Thanh Menu 6 Tab ở phía trên
+-- 2. Thanh Menu 8 Tab ở phía trên
 local tabContainer = Instance.new("Frame")
 tabContainer.Size = UDim2.new(1, -20, 0, 32)
 tabContainer.Position = UDim2.new(0, 10, 0, 42)
 tabContainer.BackgroundTransparency = 1
 tabContainer.Parent = mainFrame
 
-local function createTabButton(name, posX)
+local function createTabButton(name, posX, sizeX)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0.155, 0, 1, 0)
+    btn.Size = UDim2.new(sizeX, 0, 1, 0)
     btn.Position = UDim2.new(posX, 0, 0, 0)
     btn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
     btn.TextColor3 = Color3.fromRGB(200, 200, 200)
-    btn.TextSize = 10
+    btn.TextSize = 8
     btn.Font = Enum.Font.SourceSansBold
     btn.Text = name
     btn.Parent = tabContainer
     
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 6)
+    corner.CornerRadius = UDim.new(0, 4)
     corner.Parent = btn
     return btn
 end
 
-local tabHome   = createTabButton("1. Home", 0)
-local tabScript = createTabButton("2. Script", 0.168)
-local tabServer = createTabButton("3. Server", 0.336)
-local tabEvent  = createTabButton("4. Event", 0.504)
-local tabTool   = createTabButton("5. Tool", 0.672)
-local tabClient = createTabButton("6. Client", 0.840)
+-- Chia đều kích thước cho 8 tab
+local tabWidth = 0.121
+local tabHome     = createTabButton("1.Home", 0.000, tabWidth)
+local tabScript   = createTabButton("2.Script", 0.125, tabWidth)
+local tabServer   = createTabButton("3.S.Script", 0.250, tabWidth)
+local tabSStore   = createTabButton("4.S.Store", 0.375, tabWidth)
+local tabEvent    = createTabButton("5.Event", 0.500, tabWidth)
+local tabTool     = createTabButton("6.Tool", 0.625, tabWidth)
+local tabClient   = createTabButton("7.Client", 0.750, tabWidth)
+local tabSound    = createTabButton("8.Sound", 0.875, tabWidth)
 
--- 3. Các khung nội dung (Pages) tương ứng với 6 Tab
+-- 3. Các khung nội dung (Pages) tương ứng với 8 Tab
 local function createContentPage()
     local page = Instance.new("ScrollingFrame")
     page.Size = UDim2.new(1, -20, 1, -125)
@@ -119,9 +127,11 @@ end
 local pageHome   = createContentPage()
 local pageScript = createContentPage()
 local pageServer = createContentPage()
+local pageSStore = createContentPage()
 local pageEvent  = createContentPage()
 local pageTool   = createContentPage()
 local pageClient = createContentPage()
+local pageSound  = createContentPage()
 
 -- Trang chủ (Home) hiển thị thông tin tổng quan
 local homeText = Instance.new("TextLabel")
@@ -134,7 +144,7 @@ homeText.Font = Enum.Font.SourceSans
 homeText.TextXAlignment = Enum.TextXAlignment.Left
 homeText.TextYAlignment = Enum.TextYAlignment.Top
 homeText.TextWrapped = true
-homeText.Text = "Nhấn nút 'QUÉT NGAY' để quét cấu trúc game (Đã lọc trùng lặp).\n\n- Tab 1: Home (Tổng quan)\n- Tab 2: Script\n- Tab 3: Server Script\n- Tab 4: Event\n- Tab 5: Tool\n- Tab 6: Client"
+homeText.Text = "Nhấn 'QUÉT NGAY' để quét toàn bộ game (8 Tabs).\n\n- Tab 1: Home\n- Tab 2: Script\n- Tab 3: ServerScriptService\n- Tab 4: ServerStorage (Riêng biệt)\n- Tab 5: Event\n- Tab 6: Tool\n- Tab 7: Client\n- Tab 8: Sound"
 homeText.Parent = pageHome
 
 -- 4. Nút Quét Ngay ở đáy menu chính
@@ -157,29 +167,38 @@ local function switchTab(selectedPage, selectedBtn)
     pageHome.Visible   = (pageHome == selectedPage)
     pageScript.Visible = (pageScript == selectedPage)
     pageServer.Visible = (pageServer == selectedPage)
+    pageSStore.Visible = (pageSStore == selectedPage)
     pageEvent.Visible  = (pageEvent == selectedPage)
     pageTool.Visible   = (pageTool == selectedPage)
     pageClient.Visible = (pageClient == selectedPage)
+    pageSound.Visible  = (pageSound == selectedPage)
     
-    tabHome.BackgroundColor3   = (tabHome == selectedBtn) and Color3.fromRGB(0, 170, 127) or Color3.fromRGB(45, 45, 55)
-    tabScript.BackgroundColor3 = (tabScript == selectedBtn) and Color3.fromRGB(0, 170, 127) or Color3.fromRGB(45, 45, 55)
-    tabServer.BackgroundColor3 = (tabServer == selectedBtn) and Color3.fromRGB(0, 170, 127) or Color3.fromRGB(45, 45, 55)
-    tabEvent.BackgroundColor3  = (tabEvent == selectedBtn) and Color3.fromRGB(0, 170, 127) or Color3.fromRGB(45, 45, 55)
-    tabTool.BackgroundColor3   = (tabTool == selectedBtn) and Color3.fromRGB(0, 170, 127) or Color3.fromRGB(45, 45, 55)
-    tabClient.BackgroundColor3 = (tabClient == selectedBtn) and Color3.fromRGB(0, 170, 127) or Color3.fromRGB(45, 45, 55)
+    local activeColor = Color3.fromRGB(0, 170, 127)
+    local normalColor = Color3.fromRGB(45, 45, 55)
+    
+    tabHome.BackgroundColor3   = (tabHome == selectedBtn) and activeColor or normalColor
+    tabScript.BackgroundColor3 = (tabScript == selectedBtn) and activeColor or normalColor
+    tabServer.BackgroundColor3 = (tabServer == selectedBtn) and activeColor or normalColor
+    tabSStore.BackgroundColor3 = (tabSStore == selectedBtn) and activeColor or normalColor
+    tabEvent.BackgroundColor3  = (tabEvent == selectedBtn) and activeColor or normalColor
+    tabTool.BackgroundColor3   = (tabTool == selectedBtn) and activeColor or normalColor
+    tabClient.BackgroundColor3 = (tabClient == selectedBtn) and activeColor or normalColor
+    tabSound.BackgroundColor3  = (tabSound == selectedBtn) and activeColor or normalColor
 end
 
 tabHome.MouseButton1Click:Connect(function() switchTab(pageHome, tabHome) end)
 tabScript.MouseButton1Click:Connect(function() switchTab(pageScript, tabScript) end)
 tabServer.MouseButton1Click:Connect(function() switchTab(pageServer, tabServer) end)
+tabSStore.MouseButton1Click:Connect(function() switchTab(pageSStore, tabSStore) end)
 tabEvent.MouseButton1Click:Connect(function() switchTab(pageEvent, tabEvent) end)
 tabTool.MouseButton1Click:Connect(function() switchTab(pageTool, tabTool) end)
 tabClient.MouseButton1Click:Connect(function() switchTab(pageClient, tabClient) end)
+tabSound.MouseButton1Click:Connect(function() switchTab(pageSound, tabSound) end)
 
 -- Mặc định mở tab Home
 switchTab(pageHome, tabHome)
 
--- 6. Hàm chống trùng lặp (Chỉ giữ lại tên duy nhất)
+-- 6. Hàm chống trùng lặp tên
 local function getUniqueList(tbl)
     local uniqueMap = {}
     local uniqueList = {}
@@ -229,10 +248,12 @@ local function populateList(scrollFrame, items)
     scrollFrame.CanvasSize = UDim2.new(0, 0, 0, #items * 22)
 end
 
--- 8. Logic Quét Game và Lọc Trùng Lặp
+-- 8. Logic Quét Tách Riêng ServerStorage
 local function runScan()
-    local rawScripts, rawServerScripts, rawEvents, rawTools, rawClients = {}, {}, {}, {}, {}
-    local targets = {ReplicatedStorage, ReplicatedFirst, ServerStorage, Lighting, Workspace}
+    local rawScripts, rawServerScripts, rawSStore, rawEvents, rawTools, rawClients, rawSounds = {}, {}, {}, {}, {}, {}, {}
+    
+    -- Quét chung các service khác
+    local targets = {ReplicatedStorage, ReplicatedFirst, ServerScriptService, Lighting, Workspace, StarterPlayer, StarterGui, SoundService}
     
     pcall(function()
         for _, folder in ipairs(targets) do
@@ -241,32 +262,43 @@ local function runScan()
                     table.insert(rawScripts, descendant.Name)
                 elseif descendant:IsA("Script") then
                     table.insert(rawServerScripts, descendant.Name)
-                elseif descendant:IsA("RemoteEvent") or descendant:IsA("BindableEvent") or descendant.Name:lower():find("event") then
+                elseif descendant:IsA("RemoteEvent") or descendant:IsA("BindableEvent") or descendant:IsA("RemoteFunction") or descendant:IsA("BindableFunction") then
                     table.insert(rawEvents, descendant.Name)
                 elseif descendant:IsA("Tool") then
                     table.insert(rawTools, descendant.Name)
-                elseif descendant:IsA("ScreenGui") or (descendant:IsA("Folder") and descendant.Name:lower():find("client")) then
+                elseif descendant:IsA("ScreenGui") or descendant:IsA("SurfaceGui") or descendant:IsA("BillboardGui") then
                     table.insert(rawClients, descendant.Name)
+                elseif descendant:IsA("Sound") then
+                    table.insert(rawSounds, descendant.Name)
                 end
             end
         end
+        
+        -- Quét riêng toàn bộ nội dung bên trong ServerStorage vào tab S.Store
+        for _, descendant in ipairs(ServerStorage:GetDescendants()) do
+            table.insert(rawSStore, descendant.Name)
+        end
     end)
     
-    -- Lọc bỏ các mục trùng tên
+    -- Lọc bỏ trùng lặp
     local scripts = getUniqueList(rawScripts)
     local serverScripts = getUniqueList(rawServerScripts)
+    local sstoreItems = getUniqueList(rawSStore)
     local events = getUniqueList(rawEvents)
     local tools = getUniqueList(rawTools)
     local clients = getUniqueList(rawClients)
+    local sounds = getUniqueList(rawSounds)
     
     populateList(pageScript, scripts)
     populateList(pageServer, serverScripts)
+    populateList(pageSStore, sstoreItems)
     populateList(pageEvent, events)
     populateList(pageTool, tools)
     populateList(pageClient, clients)
+    populateList(pageSound, sounds)
     
-    homeText.Text = string.format("Trạng thái quét game (Đã lọc trùng lặp):\n- Script: %d\n- Server Script: %d\n- Event: %d\n- Tool: %d\n- Client: %d", #scripts, #serverScripts, #events, #tools, #clients)
-    print("Đã quét và lọc bỏ trùng lặp thành công!")
+    homeText.Text = string.format("Trạng thái quét game (8 Tabs):\n- Script: %d\n- Server Script: %d\n- ServerStorage: %d\n- Event: %d\n- Tool: %d\n- Client: %d\n- Sound: %d", #scripts, #serverScripts, #sstoreItems, #events, #tools, #clients, #sounds)
+    print("Đã quét thành công, ServerStorage được tách riêng tại tab 4!")
 end
 
 -- Gắn sự kiện nút bấm
@@ -277,3 +309,4 @@ end)
 
 -- Tự động chạy quét lần đầu
 runScan()
+ServerStorage
