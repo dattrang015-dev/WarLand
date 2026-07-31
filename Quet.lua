@@ -1,26 +1,27 @@
 -- =====================================================================
--- Roblox Client Script: Giao diện 4 Tab (Home, Script, Server Script, Event)
+-- Roblox Client Script: Giao diện 5 Tab (Home, Script, Server Script, Event, Tool)
 -- =====================================================================
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local PlayerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
 -- Xóa GUI cũ nếu chạy lại
-if PlayerGui:FindFirstChild("FourTabScannerGui") then
-    PlayerGui.FourTabScannerGui:Destroy()
+if PlayerGui:FindFirstChild("FiveTabScannerGui") then
+    PlayerGui.FiveTabScannerGui:Destroy()
 end
 
 -- 1. Tạo ScreenGui chính
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "FourTabScannerGui"
+screenGui.Name = "FiveTabScannerGui"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = PlayerGui
 
 -- Khung menu chính
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 420, 0, 320)
-mainFrame.Position = UDim2.new(0.5, -210, 0.5, -160)
+mainFrame.Size = UDim2.new(0, 460, 0, 340)
+mainFrame.Position = UDim2.new(0.5, -230, 0.5, -170)
 mainFrame.BackgroundColor3 = Color3.fromRGB(28, 28, 35)
 mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
@@ -38,7 +39,7 @@ titleLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
 titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 titleLabel.TextSize = 14
 titleLabel.Font = Enum.Font.SourceSansBold
-titleLabel.Text = "⚡ HỆ THỐNG QUÉT THÔNG MINH (4 TABS)"
+titleLabel.Text = "⚡ HỆ THỐNG QUÉT THÔNG MINH (5 TABS)"
 titleLabel.Parent = mainFrame
 
 local titleCorner = Instance.new("UICorner")
@@ -56,7 +57,7 @@ closeBtn.Font = Enum.Font.SourceSansBold
 closeBtn.Text = "X"
 closeBtn.Parent = titleLabel
 
--- 2. Thanh Menu 4 Tab ở phía trên
+-- 2. Thanh Menu 5 Tab ở phía trên
 local tabContainer = Instance.new("Frame")
 tabContainer.Size = UDim2.new(1, -20, 0, 32)
 tabContainer.Position = UDim2.new(0, 10, 0, 42)
@@ -65,11 +66,11 @@ tabContainer.Parent = mainFrame
 
 local function createTabButton(name, posX)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0.235, 0, 1, 0)
+    btn.Size = UDim2.new(0.19, 0, 1, 0)
     btn.Position = UDim2.new(posX, 0, 0, 0)
     btn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
     btn.TextColor3 = Color3.fromRGB(200, 200, 200)
-    btn.TextSize = 12
+    btn.TextSize = 11
     btn.Font = Enum.Font.SourceSansBold
     btn.Text = name
     btn.Parent = tabContainer
@@ -81,11 +82,12 @@ local function createTabButton(name, posX)
 end
 
 local tabHome   = createTabButton("1. Home", 0)
-local tabScript = createTabButton("2. Script", 0.25)
-local tabServer = createTabButton("3. Server", 0.50)
-local tabEvent  = createTabButton("4. Event", 0.75)
+local tabScript = createTabButton("2. Script", 0.20)
+local tabServer = createTabButton("3. Server", 0.40)
+local tabEvent  = createTabButton("4. Event", 0.60)
+local tabTool   = createTabButton("5. Tool", 0.80)
 
--- 3. Các khung nội dung (Pages) tương ứng với 4 Tab
+-- 3. Các khung nội dung (Pages) tương ứng với 5 Tab
 local function createContentPage()
     local page = Instance.new("ScrollingFrame")
     page.Size = UDim2.new(1, -20, 1, -125)
@@ -112,6 +114,7 @@ local pageHome   = createContentPage()
 local pageScript = createContentPage()
 local pageServer = createContentPage()
 local pageEvent  = createContentPage()
+local pageTool   = createContentPage()
 
 -- Trang chủ (Home) hiển thị thông tin tổng quan
 local homeText = Instance.new("TextLabel")
@@ -124,7 +127,7 @@ homeText.Font = Enum.Font.SourceSans
 homeText.TextXAlignment = Enum.TextXAlignment.Left
 homeText.TextYAlignment = Enum.TextYAlignment.Top
 homeText.TextWrapped = true
-homeText.Text = "Nhấn nút 'Quét Ngay' bên dưới để bắt đầu quét toàn bộ hệ thống trò chơi.\n\n- Tab 1: Home (Thông tin)\n- Tab 2: Script\n- Tab 3: Server Script\n- Tab 4: Event"
+homeText.Text = "Nhấn nút 'QUÉT NGAY' để quét toàn bộ hệ thống trò chơi.\n\n- Tab 1: Home (Tổng quan)\n- Tab 2: Script\n- Tab 3: Server Script\n- Tab 4: Event\n- Tab 5: Tool / Cline (Vật phẩm game)"
 homeText.Parent = pageHome
 
 -- 4. Nút Quét Ngay ở đáy menu chính
@@ -148,22 +151,25 @@ local function switchTab(selectedPage, selectedBtn)
     pageScript.Visible = (pageScript == selectedPage)
     pageServer.Visible = (pageServer == selectedPage)
     pageEvent.Visible  = (pageEvent == selectedPage)
+    pageTool.Visible   = (pageTool == selectedPage)
     
     tabHome.BackgroundColor3   = (tabHome == selectedBtn) and Color3.fromRGB(0, 170, 127) or Color3.fromRGB(45, 45, 55)
     tabScript.BackgroundColor3 = (tabScript == selectedBtn) and Color3.fromRGB(0, 170, 127) or Color3.fromRGB(45, 45, 55)
     tabServer.BackgroundColor3 = (tabServer == selectedBtn) and Color3.fromRGB(0, 170, 127) or Color3.fromRGB(45, 45, 55)
     tabEvent.BackgroundColor3  = (tabEvent == selectedBtn) and Color3.fromRGB(0, 170, 127) or Color3.fromRGB(45, 45, 55)
+    tabTool.BackgroundColor3   = (tabTool == selectedBtn) and Color3.fromRGB(0, 170, 127) or Color3.fromRGB(45, 45, 55)
 end
 
 tabHome.MouseButton1Click:Connect(function() switchTab(pageHome, tabHome) end)
 tabScript.MouseButton1Click:Connect(function() switchTab(pageScript, tabScript) end)
 tabServer.MouseButton1Click:Connect(function() switchTab(pageServer, tabServer) end)
 tabEvent.MouseButton1Click:Connect(function() switchTab(pageEvent, tabEvent) end)
+tabTool.MouseButton1Click:Connect(function() switchTab(pageTool, tabTool) end)
 
 -- Mặc định mở tab Home
 switchTab(pageHome, tabHome)
 
--- 6. Hàm cập nhật dữ liệu vào các danh sách
+-- 6. Hàm cập nhật dữ liệu vào danh sách
 local function populateList(scrollFrame, items)
     for _, child in ipairs(scrollFrame:GetChildren()) do
         if child:IsA("TextLabel") then
@@ -200,10 +206,10 @@ local function populateList(scrollFrame, items)
     scrollFrame.CanvasSize = UDim2.new(0, 0, 0, #items * 22)
 end
 
--- 7. Logic Quét Dữ Liệu An Toàn
+-- 7. Logic Quét Dữ Liệu An Toàn (Bao gồm cả Tool / Cline)
 local function runScan()
-    local scripts, serverScripts, events = {}, {}, {}
-    local targets = {ReplicatedStorage, game:GetService("Players"), workspace}
+    local scripts, serverScripts, events, tools = {}, {}, {}, {}
+    local targets = {ReplicatedStorage, Players, workspace}
     
     pcall(function()
         for _, folder in ipairs(targets) do
@@ -214,6 +220,8 @@ local function runScan()
                     table.insert(serverScripts, descendant.Name)
                 elseif descendant:IsA("RemoteEvent") or descendant:IsA("BindableEvent") or descendant.Name:lower():find("event") then
                     table.insert(events, descendant.Name)
+                elseif descendant:IsA("Tool") then -- Quét toàn bộ Tool / Cline (vật phẩm cầm tay trong game)
+                    table.insert(tools, descendant.Name)
                 end
             end
         end
@@ -222,9 +230,10 @@ local function runScan()
     populateList(pageScript, scripts)
     populateList(pageServer, serverScripts)
     populateList(pageEvent, events)
+    populateList(pageTool, tools)
     
-    homeText.Text = string.format("Trạng thái quét mới nhất:\n- Script: %d\n- Server Script: %d\n- Event: %d", #scripts, #serverScripts, #events)
-    print("Đã quét và cập nhật thành công vào 4 tab!")
+    homeText.Text = string.format("Trạng thái quét mới nhất:\n- Script: %d\n- Server Script: %d\n- Event: %d\n- Tool / Cline: %d", #scripts, #serverScripts, #events, #tools)
+    print("Đã quét và cập nhật thành công vào 5 tab!")
 end
 
 -- Gắn sự kiện nút bấm
