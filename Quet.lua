@@ -8,7 +8,6 @@ local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 
 local CONFIG = {
-    serverUrl = "https://your-server-endpoint.com/api/scan", -- Thay bằng URL server của bạn
     currentScriptVersion = "1.0.5",
     scanInterval = 10,
 }
@@ -31,9 +30,55 @@ end
 -- 1. Quét Script (Tìm tất cả LocalScript, ModuleScript, Script trong game)
 local function scanAllScripts()
     local scriptNames = {}
-    -- Duyệt qua toàn bộ các đối tượng trong game để tìm Script
     for _, descendant in ipairs(game:GetDescendants()) do
         if descendant:IsA("LocalScript") or descendant:IsA("ModuleScript") or descendant:IsA("Script") then
+            table.insert(scriptNames, descendant:GetFullName())
+        end
+    end
+    printCategory("DANH SÁCH SCRIPT TRONG GAME", scriptNames)
+    return scriptNames
+end
+
+-- 2. Quét Server (Tìm các RemoteEvent, RemoteFunction, BindableEvent hoặc cấu trúc Server)
+local function scanServerObjects()
+    local serverObjects = {}
+    for _, descendant in ipairs(game:GetDescendants()) do
+        if descendant:IsA("RemoteEvent") or descendant:IsA("RemoteFunction") or descendant:IsA("BindableEvent") or descendant:IsA("BindableFunction") then
+            table.insert(serverObjects, string.format("[%s] %s", descendant.ClassName, descendant:GetFullName()))
+        end
+    end
+    printCategory("DANH SÁCH SERVER (REMOTE/COMMUNICATION)", serverObjects)
+    return serverObjects
+end
+
+-- 3. Quét Event (Lọc và in tên các event đang hoạt động hoặc các kết nối sự kiện)
+local function scanEvents()
+    local eventNames = {}
+    for _, descendant in ipairs(ReplicatedStorage:GetDescendants()) do
+        if descendant.Name:lower():find("event") or descendant.Name:lower():find("signal") then
+            table.insert(eventNames, descendant:GetFullName())
+        end
+    end
+    printCategory("DANH SÁCH EVENT", eventNames)
+    return eventNames
+end
+
+-- --- HÀM THỰC THI CHÍNH ---
+local function runScanner()
+    print("\n>>> BẮT ĐẦU QUÉT HỆ THỐNG (ROBLOX)...")
+    
+    scanAllScripts()
+    scanServerObjects()
+    scanEvents()
+end
+
+-- Chạy định kỳ lặp lại theo chu kỳ quét (ví dụ mỗi 10 giây)
+task.spawn(function()
+    while true do
+        runScanner()
+        task.wait(CONFIG.scanInterval)
+    end
+end)
             table.insert(scriptNames, descendant:GetFullName())
         end
     end
