@@ -1,5 +1,5 @@
 -- =====================================================================
--- Roblox Client Script: Giao diện 6 Tab (Chỉ quét tài nguyên của game)
+-- Roblox Client Script: Giao diện 6 Tab (Chống trùng lặp dữ liệu)
 -- =====================================================================
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -44,7 +44,7 @@ titleLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
 titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 titleLabel.TextSize = 14
 titleLabel.Font = Enum.Font.SourceSansBold
-titleLabel.Text = "⚡ HỆ THỐNG QUÉT GAME (6 TABS)"
+titleLabel.Text = "⚡ HỆ THỐNG QUÉT GAME (CHỐNG TRÙNG LẶP)"
 titleLabel.Parent = mainFrame
 
 local titleCorner = Instance.new("UICorner")
@@ -134,7 +134,7 @@ homeText.Font = Enum.Font.SourceSans
 homeText.TextXAlignment = Enum.TextXAlignment.Left
 homeText.TextYAlignment = Enum.TextYAlignment.Top
 homeText.TextWrapped = true
-homeText.Text = "Nhấn nút 'QUÉT NGAY' để quét cấu trúc gốc của trò chơi.\n\n- Tab 1: Home (Tổng quan)\n- Tab 2: Script\n- Tab 3: Server Script\n- Tab 4: Event\n- Tab 5: Tool\n- Tab 6: Client (UI / Module gốc)"
+homeText.Text = "Nhấn nút 'QUÉT NGAY' để quét cấu trúc game (Đã lọc trùng lặp).\n\n- Tab 1: Home (Tổng quan)\n- Tab 2: Script\n- Tab 3: Server Script\n- Tab 4: Event\n- Tab 5: Tool\n- Tab 6: Client"
 homeText.Parent = pageHome
 
 -- 4. Nút Quét Ngay ở đáy menu chính
@@ -179,7 +179,20 @@ tabClient.MouseButton1Click:Connect(function() switchTab(pageClient, tabClient) 
 -- Mặc định mở tab Home
 switchTab(pageHome, tabHome)
 
--- 6. Hàm cập nhật dữ liệu vào danh sách
+-- 6. Hàm chống trùng lặp (Chỉ giữ lại tên duy nhất)
+local function getUniqueList(tbl)
+    local uniqueMap = {}
+    local uniqueList = {}
+    for _, name in ipairs(tbl) do
+        if not uniqueMap[name] then
+            uniqueMap[name] = true
+            table.insert(uniqueList, name)
+        end
+    end
+    return uniqueList
+end
+
+-- 7. Hàm cập nhật dữ liệu vào danh sách
 local function populateList(scrollFrame, items)
     for _, child in ipairs(scrollFrame:GetChildren()) do
         if child:IsA("TextLabel") then
@@ -216,29 +229,35 @@ local function populateList(scrollFrame, items)
     scrollFrame.CanvasSize = UDim2.new(0, 0, 0, #items * 22)
 end
 
--- 7. Logic Quét Chỉ Thuộc Về Game (Bỏ hoàn toàn thư mục Players)
+-- 8. Logic Quét Game và Lọc Trùng Lặp
 local function runScan()
-    local scripts, serverScripts, events, tools, clients = {}, {}, {}, {}, {}
-    -- Chỉ quét các service chứa tài nguyên của game
+    local rawScripts, rawServerScripts, rawEvents, rawTools, rawClients = {}, {}, {}, {}, {}
     local targets = {ReplicatedStorage, ReplicatedFirst, ServerStorage, Lighting, Workspace}
     
     pcall(function()
         for _, folder in ipairs(targets) do
             for _, descendant in ipairs(folder:GetDescendants()) do
                 if descendant:IsA("LocalScript") or descendant:IsA("ModuleScript") then
-                    table.insert(scripts, descendant.Name)
+                    table.insert(rawScripts, descendant.Name)
                 elseif descendant:IsA("Script") then
-                    table.insert(serverScripts, descendant.Name)
+                    table.insert(rawServerScripts, descendant.Name)
                 elseif descendant:IsA("RemoteEvent") or descendant:IsA("BindableEvent") or descendant.Name:lower():find("event") then
-                    table.insert(events, descendant.Name)
+                    table.insert(rawEvents, descendant.Name)
                 elseif descendant:IsA("Tool") then
-                    table.insert(tools, descendant.Name)
-                elseif descendant:IsA("ScreenGui") or descendant:IsA("Folder") and descendant.Name:lower():find("client") then
-                    table.insert(clients, descendant.Name)
+                    table.insert(rawTools, descendant.Name)
+                elseif descendant:IsA("ScreenGui") or (descendant:IsA("Folder") and descendant.Name:lower():find("client")) then
+                    table.insert(rawClients, descendant.Name)
                 end
             end
         end
     end)
+    
+    -- Lọc bỏ các mục trùng tên
+    local scripts = getUniqueList(rawScripts)
+    local serverScripts = getUniqueList(rawServerScripts)
+    local events = getUniqueList(rawEvents)
+    local tools = getUniqueList(rawTools)
+    local clients = getUniqueList(rawClients)
     
     populateList(pageScript, scripts)
     populateList(pageServer, serverScripts)
@@ -246,8 +265,8 @@ local function runScan()
     populateList(pageTool, tools)
     populateList(pageClient, clients)
     
-    homeText.Text = string.format("Trạng thái quét game mới nhất:\n- Script: %d\n- Server Script: %d\n- Event: %d\n- Tool: %d\n- Client (UI/Folder): %d", #scripts, #serverScripts, #events, #tools, #clients)
-    print("Đã quét hoàn tất cấu trúc game (Bỏ qua Players)!")
+    homeText.Text = string.format("Trạng thái quét game (Đã lọc trùng lặp):\n- Script: %d\n- Server Script: %d\n- Event: %d\n- Tool: %d\n- Client: %d", #scripts, #serverScripts, #events, #tools, #clients)
+    print("Đã quét và lọc bỏ trùng lặp thành công!")
 end
 
 -- Gắn sự kiện nút bấm
