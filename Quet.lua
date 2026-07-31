@@ -1,106 +1,190 @@
 -- =====================================================================
--- Roblox Client Script với GUI (Tối ưu cho Mobile)
+-- Roblox Client Script: GUI Tự Điều Chỉnh & Phân Loại Script, Server, Event
 -- =====================================================================
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local PlayerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
 
--- 1. Tạo Giao Diện (GUI)
+-- Xóa GUI cũ nếu chạy lại nhiều lần
+if PlayerGui:FindFirstChild("AdvancedScannerGui") then
+    PlayerGui.AdvancedScannerGui:Destroy()
+end
+
+-- 1. Tạo ScreenGui chính
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "ScannerGui"
+screenGui.Name = "AdvancedScannerGui"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = PlayerGui
 
--- Khung chính (Main Frame)
+-- Khung chính (Main Frame - Tự động điều chỉnh theo kích thước màn hình)
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 320, 0, 400)
-mainFrame.Position = UDim2.new(0.5, -160, 0.5, -200)
-mainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+mainFrame.Size = UDim2.new(0.8, 0, 0.7, 0)
+mainFrame.MinSize = Vector2.new(300, 350)
+mainFrame.Position = UDim2.new(0.1, 0, 0.15, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
 mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
-mainFrame.Draggable = true -- Cho phép kéo thả trên màn hình điện thoại
+mainFrame.Draggable = true -- Cho phép kéo đi quanh màn hình điện thoại
 mainFrame.Parent = screenGui
 
-local uiCorner = Instance.new("UICorner")
-uiCorner.CornerRadius = UDim.new(0, 10)
-uiCorner.Parent = mainFrame
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 12)
+mainCorner.Parent = mainFrame
 
 -- Tiêu đề
 local titleLabel = Instance.new("TextLabel")
-titleLabel.Size = UDim2.new(1, 0, 0, 45)
-titleLabel.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+titleLabel.Size = UDim2.new(1, 0, 0, 40)
+titleLabel.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
 titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-titleLabel.TextSize = 16
+titleLabel.TextSize = 15
 titleLabel.Font = Enum.Font.SourceSansBold
-titleLabel.Text = "QUÉT SCRIPT, SERVER & EVENT"
+titleLabel.Text = "🔍 TRÌNH QUÉT HỆ THỐNG (ROBLOX)"
 titleLabel.Parent = mainFrame
 
 local titleCorner = Instance.new("UICorner")
-titleCorner.CornerRadius = UDim.new(0, 10)
+titleCorner.CornerRadius = UDim.new(0, 12)
 titleCorner.Parent = titleLabel
 
--- Khung hiển thị kết quả (ScrollingFrame)
-local scrollFrame = Instance.new("ScrollingFrame")
-scrollFrame.Size = UDim2.new(1, -20, 1, -120)
-scrollFrame.Position = UDim2.new(0, 10, 0, 55)
-scrollFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-scrollFrame.BorderSizePixel = 0
-scrollFrame.CanvasSize = UDim2.new(0, 0, 2, 0)
-scrollFrame.Parent = mainFrame
+-- Nút Đóng GUI
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 35, 0, 35)
+closeBtn.Position = UDim2.new(1, -40, 0, 2)
+closeBtn.BackgroundTransparency = 1
+closeBtn.TextColor3 = Color3.fromRGB(255, 80, 80)
+closeBtn.TextSize = 18
+closeBtn.Font = Enum.Font.SourceSansBold
+closeBtn.Text = "X"
+closeBtn.Parent = titleLabel
 
-local scrollCorner = Instance.new("UICorner")
-scrollCorner.CornerRadius = UDim.new(0, 6)
-scrollCorner.Parent = scrollFrame
+-- 2. Thanh Menu Chọn Tab (Script, Server, Event)
+local tabLayout = Instance.new("Frame")
+tabLayout.Size = UDim2.new(1, -20, 0, 35)
+tabLayout.Position = UDim2.new(0, 10, 0, 48)
+tabLayout.BackgroundTransparency = 1
+tabLayout.Parent = mainFrame
 
-local textList = Instance.new("TextLabel")
-textList.Size = UDim2.new(1, -10, 1, 0)
-textList.Position = UDim2.new(0, 5, 0, 0)
-textList.BackgroundTransparency = 1
-textList.TextColor3 = Color3.fromRGB(0, 255, 128)
-textList.TextSize = 13
-textList.Font = Enum.Font.Code
-textList.TextXAlignment = Enum.TextXAlignment.Left
-textList.TextYAlignment = Enum.TextYAlignment.Top
-textList.TextWrapped = true
-textList.Text = "Nhấn nút 'Quét Ngay' bên dưới để bắt đầu..."
-textList.Parent = scrollFrame
+local function createTabButton(name, positionX)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0.32, 0, 1, 0)
+    btn.Position = UDim2.new(positionX, 0, 0, 0)
+    btn.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+    btn.TextColor3 = Color3.fromRGB(200, 200, 200)
+    btn.TextSize = 13
+    btn.Font = Enum.Font.SourceSansBold
+    btn.Text = name
+    btn.Parent = tabLayout
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 6)
+    corner.Parent = btn
+    return btn
+end
 
--- Nút Quét Ngay
+local btnScript = createTabButton("Scripts", 0)
+local btnServer = createTabButton("Servers", 0.34)
+local btnEvent  = createTabButton("Events", 0.68)
+
+-- 3. Khung hiển thị danh sách (ScrollingFrame cho từng Tab)
+local function createScrollingContainer()
+    local scroll = Instance.new("ScrollingFrame")
+    scroll.Size = UDim2.new(1, -20, 1, -135)
+    scroll.Position = UDim2.new(0, 10, 0, 90)
+    scroll.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+    scroll.BorderSizePixel = 0
+    scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+    scroll.Visible = false
+    scroll.Parent = mainFrame
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 8)
+    corner.Parent = scroll
+    
+    local listLayout = Instance.new("UIListLayout")
+    listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    listLayout.Padding = UDim.new(0, 4)
+    listLayout.Parent = scroll
+    
+    return scroll
+end
+
+local scrollScript = createScrollingContainer()
+local scrollServer = createScrollingContainer()
+local scrollEvent  = createScrollingContainer()
+
+-- Nút Quét Lại (Scan Button ở đáy)
 local scanBtn = Instance.new("TextButton")
-scanBtn.Size = UDim2.new(0.46, 0, 0, 40)
-scanBtn.Position = UDim2.new(0.03, 0, 1, -50)
+scanBtn.Size = UDim2.new(1, -20, 0, 35)
+scanBtn.Position = UDim2.new(0, 10, 1, -42)
 scanBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 127)
 scanBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 scanBtn.TextSize = 14
 scanBtn.Font = Enum.Font.SourceSansBold
-scanBtn.Text = "QUÉT NGAY"
+scanBtn.Text = "QUÉT LẠI DỮ LIỆU"
 scanBtn.Parent = mainFrame
 
-local btnCorner1 = Instance.new("UICorner")
-btnCorner1.CornerRadius = UDim.new(0, 6)
-btnCorner1.Parent = scanBtn
+local scanCorner = Instance.new("UICorner")
+scanCorner.CornerRadius = UDim.new(0, 6)
+scanCorner.Parent = scanBtn
 
--- Nút Đóng / Ẩn GUI
-local closeBtn = Instance.new("TextButton")
-closeBtn.Size = UDim2.new(0.46, 0, 0, 40)
-closeBtn.Position = UDim2.new(0.51, 0, 1, -50)
-closeBtn.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
-closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-closeBtn.TextSize = 14
-closeBtn.Font = Enum.Font.SourceSansBold
-closeBtn.Text = "ĐÓNG"
-closeBtn.Parent = mainFrame
+-- 4. Hàm chuyển Tab
+local function switchTab(activeScroll, activeBtn)
+    scrollScript.Visible = (scrollScript == activeScroll)
+    scrollServer.Visible = (scrollServer == activeScroll)
+    scrollEvent.Visible  = (scrollEvent == activeScroll)
+    
+    btnScript.BackgroundColor3 = (btnScript == activeBtn) and Color3.fromRGB(0, 170, 127) or Color3.fromRGB(50, 50, 60)
+    btnServer.BackgroundColor3 = (btnServer == activeBtn) and Color3.fromRGB(0, 170, 127) or Color3.fromRGB(50, 50, 60)
+    btnEvent.BackgroundColor3  = (btnEvent == activeBtn) and Color3.fromRGB(0, 170, 127) or Color3.fromRGB(50, 50, 60)
+end
 
-local btnCorner2 = Instance.new("UICorner")
-btnCorner2.CornerRadius = UDim.new(0, 6)
-btnCorner2.Parent = closeBtn
+btnScript.MouseButton1Click:Connect(function() switchTab(scrollScript, btnScript) end)
+btnServer.MouseButton1Click:Connect(function() switchTab(scrollServer, btnServer) end)
+btnEvent.MouseButton1Click:Connect(function() switchTab(scrollEvent, btnEvent) end)
 
--- 2. Logic Quét và Đẩy dữ liệu lên GUI
-local function runSafeScan()
-    local outputText = "=== KẾT QUẢ QUÉT HỆ THỐNG ===\n\n"
+-- Mặc định mở tab Script đầu tiên
+switchTab(scrollScript, btnScript)
+
+-- 5. Hàm điền dữ liệu vào danh sách dạng Text dòng
+local function populateList(scrollFrame, items)
+    -- Xóa các dòng cũ
+    for _, child in ipairs(scrollFrame:GetChildren()) do
+        if child:IsA("TextLabel") then
+            child:Destroy()
+        end
+    end
+    
+    if #items == 0 then
+        local emptyLabel = Instance.new("TextLabel")
+        emptyLabel.Size = UDim2.new(1, 0, 0, 30)
+        emptyLabel.BackgroundTransparency = 1
+        emptyLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+        emptyLabel.TextSize = 13
+        emptyLabel.Font = Enum.Font.SourceSansItalic
+        emptyLabel.Text = "Không tìm thấy dữ liệu nào."
+        emptyLabel.Parent = scrollFrame
+        scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 30)
+        return
+    end
+    
+    for i, name in ipairs(items) do
+        local lbl = Instance.new("TextLabel")
+        lbl.Size = UDim2.new(1, -10, 0, 24)
+        lbl.BackgroundTransparency = 1
+        lbl.TextColor3 = Color3.fromRGB(0, 255, 128)
+        lbl.TextSize = 12
+        lbl.Font = Enum.Font.Code
+        lbl.TextXAlignment = Enum.TextXAlignment.Left
+        lbl.Text = string.format(" [%02d] %s", i, name)
+        lbl.Parent = scrollFrame
+    end
+    
+    scrollFrame.CanvasSize = UDim2.new(0, 0, 0, #items * 26)
+end
+
+-- 6. Logic Quét Dữ Liệu An Toàn
+local function runScan()
     local scripts, servers, events = {}, {}, {}
-
     local targets = {ReplicatedStorage, game:GetService("Players"), workspace}
     
     pcall(function()
@@ -109,40 +193,25 @@ local function runSafeScan()
                 if descendant:IsA("LocalScript") or descendant:IsA("ModuleScript") then
                     table.insert(scripts, descendant:GetFullName())
                 elseif descendant:IsA("RemoteEvent") or descendant:IsA("RemoteFunction") then
-                    table.insert(servers, "["..descendant.ClassName.."] "..descendant.Name)
+                    table.insert(servers, "[" .. descendant.ClassName .. "] " .. descendant:GetFullName())
                 elseif descendant.Name:lower():find("event") then
-                    table.insert(events, descendant.Name)
+                    table.insert(events, descendant:GetFullName())
                 end
             end
         end
     end)
-
-    outputText = outputText .. "[ SCRIPT: " .. #scripts .. " ]\n"
-    for i, name in ipairs(scripts) do
-        if i <= 10 then outputText = outputText .. " - " .. name .. "\n" end
-    end
-    if #scripts > 10 then outputText = outputText .. " ... và " .. (#scripts - 10) .. " script khác.\n" end
-
-    outputText = outputText .. "\n[ SERVER / REMOTE: " .. #servers .. " ]\n"
-    for i, name in ipairs(servers) do
-        if i <= 10 then outputText = outputText .. " - " .. name .. "\n" end
-    end
-
-    outputText = outputText .. "\n[ EVENT: " .. #events .. " ]\n"
-    for i, name in ipairs(events) do
-        if i <= 10 then outputText = outputText .. " - " .. name .. "\n" end
-    end
-
-    textList.Text = outputText
-    print("Quét hoàn tất! Đã cập nhật lên GUI.")
+    
+    populateList(scrollScript, scripts)
+    populateList(scrollServer, servers)
+    populateList(scrollEvent, events)
+    print("Quét hoàn tất phân chia giao diện thành công!")
 end
 
--- 3. Gắn sự kiện cho các nút bấm
-scanBtn.MouseButton1Click:Connect(function()
-    textList.Text = "Đang quét dữ liệu..."
-    task.spawn(runSafeScan)
-end)
-
+-- Gắn sự kiện nút bấm
+scanBtn.MouseButton1Click:Connect(runScan)
 closeBtn.MouseButton1Click:Connect(function()
     screenGui:Destroy()
 end)
+
+-- Tự động quét lần đầu khi mở GUI
+runScan()
