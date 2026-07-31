@@ -1,5 +1,5 @@
 -- =====================================================================
--- Roblox Client Script: Giao diện 5 Tab (Home, Script, Server Script, Event, Tool)
+-- Roblox Client Script: Giao diện 6 Tab (Home, Script, Server Script, Event, Tool, Client)
 -- =====================================================================
 
 local Players = game:GetService("Players")
@@ -8,20 +8,20 @@ local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
 -- Xóa GUI cũ nếu chạy lại
-if PlayerGui:FindFirstChild("FiveTabScannerGui") then
-    PlayerGui.FiveTabScannerGui:Destroy()
+if PlayerGui:FindFirstChild("SixTabScannerGui") then
+    PlayerGui.SixTabScannerGui:Destroy()
 end
 
 -- 1. Tạo ScreenGui chính
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "FiveTabScannerGui"
+screenGui.Name = "SixTabScannerGui"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = PlayerGui
 
 -- Khung menu chính
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 460, 0, 340)
-mainFrame.Position = UDim2.new(0.5, -230, 0.5, -170)
+mainFrame.Size = UDim2.new(0, 480, 0, 350)
+mainFrame.Position = UDim2.new(0.5, -240, 0.5, -175)
 mainFrame.BackgroundColor3 = Color3.fromRGB(28, 28, 35)
 mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
@@ -39,7 +39,7 @@ titleLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
 titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 titleLabel.TextSize = 14
 titleLabel.Font = Enum.Font.SourceSansBold
-titleLabel.Text = "⚡ HỆ THỐNG QUÉT THÔNG MINH (5 TABS)"
+titleLabel.Text = "⚡ HỆ THỐNG QUÉT THÔNG MINH (6 TABS)"
 titleLabel.Parent = mainFrame
 
 local titleCorner = Instance.new("UICorner")
@@ -57,7 +57,7 @@ closeBtn.Font = Enum.Font.SourceSansBold
 closeBtn.Text = "X"
 closeBtn.Parent = titleLabel
 
--- 2. Thanh Menu 5 Tab ở phía trên
+-- 2. Thanh Menu 6 Tab ở phía trên
 local tabContainer = Instance.new("Frame")
 tabContainer.Size = UDim2.new(1, -20, 0, 32)
 tabContainer.Position = UDim2.new(0, 10, 0, 42)
@@ -66,11 +66,11 @@ tabContainer.Parent = mainFrame
 
 local function createTabButton(name, posX)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0.19, 0, 1, 0)
+    btn.Size = UDim2.new(0.155, 0, 1, 0)
     btn.Position = UDim2.new(posX, 0, 0, 0)
     btn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
     btn.TextColor3 = Color3.fromRGB(200, 200, 200)
-    btn.TextSize = 11
+    btn.TextSize = 10
     btn.Font = Enum.Font.SourceSansBold
     btn.Text = name
     btn.Parent = tabContainer
@@ -82,12 +82,13 @@ local function createTabButton(name, posX)
 end
 
 local tabHome   = createTabButton("1. Home", 0)
-local tabScript = createTabButton("2. Script", 0.20)
-local tabServer = createTabButton("3. Server", 0.40)
-local tabEvent  = createTabButton("4. Event", 0.60)
-local tabTool   = createTabButton("5. Tool", 0.80)
+local tabScript = createTabButton("2. Script", 0.168)
+local tabServer = createTabButton("3. Server", 0.336)
+local tabEvent  = createTabButton("4. Event", 0.504)
+local tabTool   = createTabButton("5. Tool", 0.672)
+local tabClient = createTabButton("6. Client", 0.840)
 
--- 3. Các khung nội dung (Pages) tương ứng với 5 Tab
+-- 3. Các khung nội dung (Pages) tương ứng với 6 Tab
 local function createContentPage()
     local page = Instance.new("ScrollingFrame")
     page.Size = UDim2.new(1, -20, 1, -125)
@@ -115,6 +116,7 @@ local pageScript = createContentPage()
 local pageServer = createContentPage()
 local pageEvent  = createContentPage()
 local pageTool   = createContentPage()
+local pageClient = createContentPage()
 
 -- Trang chủ (Home) hiển thị thông tin tổng quan
 local homeText = Instance.new("TextLabel")
@@ -122,12 +124,12 @@ homeText.Size = UDim2.new(1, -10, 1, 0)
 homeText.Position = UDim2.new(0, 5, 0, 5)
 homeText.BackgroundTransparency = 1
 homeText.TextColor3 = Color3.fromRGB(255, 255, 255)
-homeText.TextSize = 13
+homeText.TextSize = 12
 homeText.Font = Enum.Font.SourceSans
 homeText.TextXAlignment = Enum.TextXAlignment.Left
 homeText.TextYAlignment = Enum.TextYAlignment.Top
 homeText.TextWrapped = true
-homeText.Text = "Nhấn nút 'QUÉT NGAY' để quét toàn bộ hệ thống trò chơi.\n\n- Tab 1: Home (Tổng quan)\n- Tab 2: Script\n- Tab 3: Server Script\n- Tab 4: Event\n- Tab 5: Tool / Cline (Vật phẩm game)"
+homeText.Text = "Nhấn nút 'QUÉT NGAY' để quét toàn bộ hệ thống trò chơi.\n\n- Tab 1: Home (Tổng quan)\n- Tab 2: Script\n- Tab 3: Server Script\n- Tab 4: Event\n- Tab 5: Tool (Vật phẩm)\n- Tab 6: Client (Dữ liệu phía Client)"
 homeText.Parent = pageHome
 
 -- 4. Nút Quét Ngay ở đáy menu chính
@@ -152,12 +154,14 @@ local function switchTab(selectedPage, selectedBtn)
     pageServer.Visible = (pageServer == selectedPage)
     pageEvent.Visible  = (pageEvent == selectedPage)
     pageTool.Visible   = (pageTool == selectedPage)
+    pageClient.Visible = (pageClient == selectedPage)
     
     tabHome.BackgroundColor3   = (tabHome == selectedBtn) and Color3.fromRGB(0, 170, 127) or Color3.fromRGB(45, 45, 55)
     tabScript.BackgroundColor3 = (tabScript == selectedBtn) and Color3.fromRGB(0, 170, 127) or Color3.fromRGB(45, 45, 55)
     tabServer.BackgroundColor3 = (tabServer == selectedBtn) and Color3.fromRGB(0, 170, 127) or Color3.fromRGB(45, 45, 55)
     tabEvent.BackgroundColor3  = (tabEvent == selectedBtn) and Color3.fromRGB(0, 170, 127) or Color3.fromRGB(45, 45, 55)
     tabTool.BackgroundColor3   = (tabTool == selectedBtn) and Color3.fromRGB(0, 170, 127) or Color3.fromRGB(45, 45, 55)
+    tabClient.BackgroundColor3 = (tabClient == selectedBtn) and Color3.fromRGB(0, 170, 127) or Color3.fromRGB(45, 45, 55)
 end
 
 tabHome.MouseButton1Click:Connect(function() switchTab(pageHome, tabHome) end)
@@ -165,6 +169,7 @@ tabScript.MouseButton1Click:Connect(function() switchTab(pageScript, tabScript) 
 tabServer.MouseButton1Click:Connect(function() switchTab(pageServer, tabServer) end)
 tabEvent.MouseButton1Click:Connect(function() switchTab(pageEvent, tabEvent) end)
 tabTool.MouseButton1Click:Connect(function() switchTab(pageTool, tabTool) end)
+tabClient.MouseButton1Click:Connect(function() switchTab(pageClient, tabClient) end)
 
 -- Mặc định mở tab Home
 switchTab(pageHome, tabHome)
@@ -206,9 +211,9 @@ local function populateList(scrollFrame, items)
     scrollFrame.CanvasSize = UDim2.new(0, 0, 0, #items * 22)
 end
 
--- 7. Logic Quét Dữ Liệu An Toàn (Bao gồm cả Tool / Cline)
+-- 7. Logic Quét Dữ Liệu An Toàn Phân Chia 6 Tab
 local function runScan()
-    local scripts, serverScripts, events, tools = {}, {}, {}, {}
+    local scripts, serverScripts, events, tools, clients = {}, {}, {}, {}, {}
     local targets = {ReplicatedStorage, Players, workspace}
     
     pcall(function()
@@ -220,8 +225,10 @@ local function runScan()
                     table.insert(serverScripts, descendant.Name)
                 elseif descendant:IsA("RemoteEvent") or descendant:IsA("BindableEvent") or descendant.Name:lower():find("event") then
                     table.insert(events, descendant.Name)
-                elseif descendant:IsA("Tool") then -- Quét toàn bộ Tool / Cline (vật phẩm cầm tay trong game)
+                elseif descendant:IsA("Tool") then
                     table.insert(tools, descendant.Name)
+                elseif descendant:IsA("PlayerGui") or descendant:IsA("StarterGui") or descendant.Name:lower():find("client") then
+                    table.insert(clients, descendant.Name)
                 end
             end
         end
@@ -231,9 +238,10 @@ local function runScan()
     populateList(pageServer, serverScripts)
     populateList(pageEvent, events)
     populateList(pageTool, tools)
+    populateList(pageClient, clients)
     
-    homeText.Text = string.format("Trạng thái quét mới nhất:\n- Script: %d\n- Server Script: %d\n- Event: %d\n- Tool / Cline: %d", #scripts, #serverScripts, #events, #tools)
-    print("Đã quét và cập nhật thành công vào 5 tab!")
+    homeText.Text = string.format("Trạng thái quét mới nhất:\n- Script: %d\n- Server Script: %d\n- Event: %d\n- Tool: %d\n- Client: %d", #scripts, #serverScripts, #events, #tools, #clients)
+    print("Đã quét và phân loại thành công vào 6 tab!")
 end
 
 -- Gắn sự kiện nút bấm
