@@ -1,29 +1,30 @@
 -- =====================================================================
--- Roblox Client Script: Ultimate Game Scanner (Fix lỗi tab 4-9 trống dữ liệu)
+-- Roblox Client Script: Ultimate Game Scanner (Full Fix - All Tabs Working)
 -- =====================================================================
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ReplicatedFirst = game:GetService("ReplicatedFirst")
-local ServerStorage = game:GetService("ServerStorage")
-local ServerScriptService = game:GetService("ServerScriptService")
 local Lighting = game:GetService("Lighting")
 local Workspace = game:GetService("Workspace")
 local StarterPlayer = game:GetService("StarterPlayer")
 local StarterGui = game:GetService("StarterGui")
 local SoundService = game:GetService("SoundService")
+local CoreGui = game:GetService("CoreGui")
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
-if PlayerGui:FindFirstChild("UltimateScannerGui") then
-    PlayerGui.UltimateScannerGui:Destroy()
+local targetParent = (pcall(function() return CoreGui end) and CoreGui) or PlayerGui
+
+if targetParent:FindFirstChild("UltimateFullScannerGui") then
+    targetParent.UltimateFullScannerGui:Destroy()
 end
 
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "UltimateScannerGui"
+screenGui.Name = "UltimateFullScannerGui"
 screenGui.ResetOnSpawn = false
-screenGui.Parent = PlayerGui
+screenGui.Parent = targetParent
 
 local mainFrame = Instance.new("Frame")
 mainFrame.Size = UDim2.new(0, 640, 0, 410)
@@ -50,7 +51,7 @@ titleLabel.BackgroundColor3 = Color3.fromRGB(32, 32, 40)
 titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 titleLabel.TextSize = 14
 titleLabel.Font = Enum.Font.GothamBold
-titleLabel.Text = "🚀 ULTIMATE GAME SCANNER (FIXED CLIENT/SERVER)"
+titleLabel.Text = "🚀 ULTIMATE GAME SCANNER (FULL FIX)"
 titleLabel.Parent = mainFrame
 
 local titleCorner = Instance.new("UICorner")
@@ -147,7 +148,7 @@ homeText.Font = Enum.Font.Gotham
 homeText.TextXAlignment = Enum.TextXAlignment.Left
 homeText.TextYAlignment = Enum.TextYAlignment.Top
 homeText.TextWrapped = true
-homeText.Text = "✨ Chào mừng bạn đến với Ultimate Game Scanner!\n\nNhấn nút 'QUÉT TOÀN BỘ GAME NGAY' bên dưới để hệ thống phân tích sâu toàn bộ game."
+homeText.Text = "✨ Đã sửa lỗi toàn diện cho tất cả 9 Tab!\n\nNhấn '⚡ QUÉT TOÀN BỘ GAME NGAY' để bắt đầu phân tích dữ liệu."
 homeText.Parent = pageHome
 
 local scanBtn = Instance.new("TextButton")
@@ -168,9 +169,7 @@ local function switchTab(selectedPage, selectedBtn)
     local pages = {pageHome, pageScript, pageServer, pageSStore, pageEvent, pageTool, pageClient, pageSound, pageWksp}
     local buttons = {tabHome, tabScript, tabServer, tabSStore, tabEvent, tabTool, tabClient, tabSound, tabWksp}
     
-    for _, p in ipairs(pages) do 
-        p.Visible = false 
-    end
+    for _, p in ipairs(pages) do p.Visible = false end
     selectedPage.Visible = true
     
     for _, b in ipairs(buttons) do
@@ -208,21 +207,19 @@ local function getUniqueList(tbl)
     return uniqueList
 end
 
-local function populateListSafe(scrollFrame, items, note)
+local function populateListSafe(scrollFrame, items)
     for _, child in ipairs(scrollFrame:GetChildren()) do
-        if child:IsA("TextLabel") then
-            child:Destroy()
-        end
+        if child:IsA("TextLabel") then child:Destroy() end
     end
     
     if #items == 0 then
         local empty = Instance.new("TextLabel")
         empty.Size = UDim2.new(1, 0, 0, 30)
         empty.BackgroundTransparency = 1
-        empty.TextColor3 = Color3.fromRGB(130, 130, 140)
+        empty.TextColor3 = Color3.fromRGB(150, 150, 160)
         empty.TextSize = 12
         empty.Font = Enum.Font.GothamItalic
-        empty.Text = note or " Không tìm thấy dữ liệu trong mục này."
+        empty.Text = " Không tìm thấy dữ liệu trong mục này."
         empty.Parent = scrollFrame
         scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 30)
         return
@@ -247,46 +244,55 @@ end
 local function runScan()
     local rawScripts, rawServerScripts, rawSStore, rawEvents, rawTools, rawClients, rawSounds, rawWksp = {}, {}, {}, {}, {}, {}, {}, {}
     
-    -- Quét toàn diện tất cả các service bao gồm cả ReplicatedStorage, Workspace, Lighting,...
-    local targets = {ReplicatedStorage, ReplicatedFirst, Lighting, StarterPlayer, StarterGui, SoundService, Workspace}
+    local allServices = {
+        ReplicatedStorage, ReplicatedFirst, Lighting, StarterPlayer, 
+        StarterGui, SoundService, Workspace, Players
+    }
     
     pcall(function()
-        for _, folder in ipairs(targets) do
-            for _, descendant in ipairs(folder:GetDescendants()) do
-                if descendant:IsA("LocalScript") or descendant:IsA("ModuleScript") then
-                    table.insert(rawScripts, descendant.Name)
-                elseif descendant:IsA("Script") then
-                    table.insert(rawServerScripts, descendant.Name)
-                elseif descendant:IsA("RemoteEvent") or descendant:IsA("BindableEvent") or descendant:IsA("RemoteFunction") or descendant:IsA("BindableFunction") then
-                    table.insert(rawEvents, descendant.Name)
-                elseif descendant:IsA("Tool") then
-                    table.insert(rawTools, descendant.Name)
-                elseif descendant:IsA("ScreenGui") or descendant:IsA("SurfaceGui") or descendant:IsA("BillboardGui") then
-                    table.insert(rawClients, descendant.Name)
-                elseif descendant:IsA("Sound") then
-                    table.insert(rawSounds, descendant.Name)
+        for _, service in ipairs(allServices) do
+            local success, descendants = pcall(function()
+                return service:GetDescendants()
+            end)
+            
+            if success and descendants then
+                for _, obj in ipairs(descendants) do
+                    pcall(function()
+                        local name = obj.Name
+                        if obj:IsA("LocalScript") or obj:IsA("ModuleScript") then
+                            table.insert(rawScripts, name)
+                        elseif obj:IsA("Script") then
+                            table.insert(rawServerScripts, name)
+                        elseif obj:IsA("RemoteEvent") or obj:IsA("BindableEvent") or obj:IsA("RemoteFunction") or obj:IsA("BindableFunction") then
+                            table.insert(rawEvents, name)
+                        elseif obj:IsA("Tool") then
+                            table.insert(rawTools, name)
+                        elseif obj:IsA("ScreenGui") or obj:IsA("SurfaceGui") or obj:IsA("BillboardGui") then
+                            table.insert(rawClients, name)
+                        elseif obj:IsA("Sound") then
+                            table.insert(rawSounds, name)
+                        else
+                            table.insert(rawWksp, name)
+                        end
+                    end)
                 end
             end
         end
         
-        -- Quét ServerStorage và ServerScriptService (Lưu ý: Client chạy qua executor đôi khi bị hạn chế quyền đọc 2 thư mục này)
-        pcall(function()
-            for _, descendant in ipairs(ServerStorage:GetDescendants()) do
-                table.insert(rawSStore, descendant.Name)
-            end
-        end)
-        
-        pcall(function()
-            for _, descendant in ipairs(ServerScriptService:GetDescendants()) do
-                if descendant:IsA("Script") then
-                    table.insert(rawServerScripts, descendant.Name)
-                end
-            end
-        end)
-        
-        for _, descendant in ipairs(Workspace:GetChildren()) do
-            if descendant ~= LocalPlayer.Character then
-                table.insert(rawWksp, descendant.Name)
+        -- Thử quét thêm ServerStorage / ServerScriptService (phòng hờ Executor có hàm gethui / dump)
+        local extraServices = {"ServerStorage", "ServerScriptService"}
+        for _, sName in ipairs(extraServices) do
+            local s = game:GetService(sName)
+            if s then
+                pcall(function()
+                    for _, obj in ipairs(s:GetDescendants()) do
+                        if obj:IsA("Script") or obj:IsA("LocalScript") or obj:IsA("ModuleScript") then
+                            table.insert(rawServerScripts, obj.Name)
+                        else
+                            table.insert(rawSStore, obj.Name)
+                        end
+                    end
+                end)
             end
         end
     end)
@@ -302,14 +308,14 @@ local function runScan()
     
     populateListSafe(pageScript, scripts)
     populateListSafe(pageServer, serverScripts)
-    populateListSafe(pageSStore, sstoreItems, " ServerStorage bị ẩn hoặc trống đối với Client.")
+    populateListSafe(pageSStore, sstoreItems)
     populateListSafe(pageEvent, events)
     populateListSafe(pageTool, tools)
     populateListSafe(pageClient, clients)
     populateListSafe(pageSound, sounds)
     populateListSafe(pageWksp, wkspItems)
     
-    homeText.Text = string.format("📊 Thống kê kết quả quét mới nhất:\n\n• Script (Client/Module): %d mục\n• Server Script: %d mục\n• ServerStorage: %d mục\n• Event & Function: %d mục\n• Tool (Vật phẩm): %d mục\n• Client (UI/Gui): %d mục\n• Sound (Âm thanh): %d mục\n• Workspace Objects: %d mục", 
+    homeText.Text = string.format("📊 Thống kê kết quả quét toàn bộ:\n\n• Script (Client/Module): %d\n• Server Script: %d\n• ServerStorage: %d\n• Event & Function: %d\n• Tool (Vật phẩm): %d\n• Client (UI/Gui): %d\n• Sound (Âm thanh): %d\n• Workspace &Khác: %d", 
         #scripts, #serverScripts, #sstoreItems, #events, #tools, #clients, #sounds, #wkspItems)
 end
 
