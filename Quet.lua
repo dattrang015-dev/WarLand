@@ -1,9 +1,14 @@
 -- =====================================================================
--- Roblox Client Script: Giao diện 6 Tab (Home, Script, Server Script, Event, Tool, Client)
+-- Roblox Client Script: Giao diện 6 Tab (Chỉ quét tài nguyên của game)
 -- =====================================================================
 
-local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ReplicatedFirst = game:GetService("ReplicatedFirst")
+local ServerStorage = game:GetService("ServerStorage")
+local Lighting = game:GetService("Lighting")
+local Workspace = game:GetService("Workspace")
+
+local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
@@ -39,7 +44,7 @@ titleLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
 titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 titleLabel.TextSize = 14
 titleLabel.Font = Enum.Font.SourceSansBold
-titleLabel.Text = "⚡ HỆ THỐNG QUÉT THÔNG MINH (6 TABS)"
+titleLabel.Text = "⚡ HỆ THỐNG QUÉT GAME (6 TABS)"
 titleLabel.Parent = mainFrame
 
 local titleCorner = Instance.new("UICorner")
@@ -129,7 +134,7 @@ homeText.Font = Enum.Font.SourceSans
 homeText.TextXAlignment = Enum.TextXAlignment.Left
 homeText.TextYAlignment = Enum.TextYAlignment.Top
 homeText.TextWrapped = true
-homeText.Text = "Nhấn nút 'QUÉT NGAY' để quét toàn bộ hệ thống trò chơi.\n\n- Tab 1: Home (Tổng quan)\n- Tab 2: Script\n- Tab 3: Server Script\n- Tab 4: Event\n- Tab 5: Tool (Vật phẩm)\n- Tab 6: Client (Dữ liệu phía Client)"
+homeText.Text = "Nhấn nút 'QUÉT NGAY' để quét cấu trúc gốc của trò chơi.\n\n- Tab 1: Home (Tổng quan)\n- Tab 2: Script\n- Tab 3: Server Script\n- Tab 4: Event\n- Tab 5: Tool\n- Tab 6: Client (UI / Module gốc)"
 homeText.Parent = pageHome
 
 -- 4. Nút Quét Ngay ở đáy menu chính
@@ -211,10 +216,11 @@ local function populateList(scrollFrame, items)
     scrollFrame.CanvasSize = UDim2.new(0, 0, 0, #items * 22)
 end
 
--- 7. Logic Quét Dữ Liệu An Toàn Phân Chia 6 Tab
+-- 7. Logic Quét Chỉ Thuộc Về Game (Bỏ hoàn toàn thư mục Players)
 local function runScan()
     local scripts, serverScripts, events, tools, clients = {}, {}, {}, {}, {}
-    local targets = {ReplicatedStorage, Players, workspace}
+    -- Chỉ quét các service chứa tài nguyên của game
+    local targets = {ReplicatedStorage, ReplicatedFirst, ServerStorage, Lighting, Workspace}
     
     pcall(function()
         for _, folder in ipairs(targets) do
@@ -227,7 +233,7 @@ local function runScan()
                     table.insert(events, descendant.Name)
                 elseif descendant:IsA("Tool") then
                     table.insert(tools, descendant.Name)
-                elseif descendant:IsA("PlayerGui") or descendant:IsA("StarterGui") or descendant.Name:lower():find("client") then
+                elseif descendant:IsA("ScreenGui") or descendant:IsA("Folder") and descendant.Name:lower():find("client") then
                     table.insert(clients, descendant.Name)
                 end
             end
@@ -240,8 +246,8 @@ local function runScan()
     populateList(pageTool, tools)
     populateList(pageClient, clients)
     
-    homeText.Text = string.format("Trạng thái quét mới nhất:\n- Script: %d\n- Server Script: %d\n- Event: %d\n- Tool: %d\n- Client: %d", #scripts, #serverScripts, #events, #tools, #clients)
-    print("Đã quét và phân loại thành công vào 6 tab!")
+    homeText.Text = string.format("Trạng thái quét game mới nhất:\n- Script: %d\n- Server Script: %d\n- Event: %d\n- Tool: %d\n- Client (UI/Folder): %d", #scripts, #serverScripts, #events, #tools, #clients)
+    print("Đã quét hoàn tất cấu trúc game (Bỏ qua Players)!")
 end
 
 -- Gắn sự kiện nút bấm
