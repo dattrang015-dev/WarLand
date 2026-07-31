@@ -1,5 +1,5 @@
 -- =====================================================================
--- Roblox Client Script: Ultimate Game Scanner (9 Tabs - Clean Output)
+-- Roblox Client Script: Ultimate Game Scanner (Fix lỗi tab 4-9 trống dữ liệu)
 -- =====================================================================
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -50,7 +50,7 @@ titleLabel.BackgroundColor3 = Color3.fromRGB(32, 32, 40)
 titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 titleLabel.TextSize = 14
 titleLabel.Font = Enum.Font.GothamBold
-titleLabel.Text = "🚀 ULTIMATE GAME SCANNER (9 TABS)"
+titleLabel.Text = "🚀 ULTIMATE GAME SCANNER (FIXED CLIENT/SERVER)"
 titleLabel.Parent = mainFrame
 
 local titleCorner = Instance.new("UICorner")
@@ -147,7 +147,7 @@ homeText.Font = Enum.Font.Gotham
 homeText.TextXAlignment = Enum.TextXAlignment.Left
 homeText.TextYAlignment = Enum.TextYAlignment.Top
 homeText.TextWrapped = true
-homeText.Text = "✨ Chào mừng bạn đến với Ultimate Game Scanner!\n\nNhấn nút 'QUÉT TOÀN BỘ GAME NGAY' bên dưới để hệ thống phân tích sâu toàn bộ game qua 9 danh mục."
+homeText.Text = "✨ Chào mừng bạn đến với Ultimate Game Scanner!\n\nNhấn nút 'QUÉT TOÀN BỘ GAME NGAY' bên dưới để hệ thống phân tích sâu toàn bộ game."
 homeText.Parent = pageHome
 
 local scanBtn = Instance.new("TextButton")
@@ -208,7 +208,7 @@ local function getUniqueList(tbl)
     return uniqueList
 end
 
-local function populateListSafe(scrollFrame, items)
+local function populateListSafe(scrollFrame, items, note)
     for _, child in ipairs(scrollFrame:GetChildren()) do
         if child:IsA("TextLabel") then
             child:Destroy()
@@ -222,7 +222,7 @@ local function populateListSafe(scrollFrame, items)
         empty.TextColor3 = Color3.fromRGB(130, 130, 140)
         empty.TextSize = 12
         empty.Font = Enum.Font.GothamItalic
-        empty.Text = " Không tìm thấy dữ liệu trong mục này."
+        empty.Text = note or " Không tìm thấy dữ liệu trong mục này."
         empty.Parent = scrollFrame
         scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 30)
         return
@@ -247,7 +247,8 @@ end
 local function runScan()
     local rawScripts, rawServerScripts, rawSStore, rawEvents, rawTools, rawClients, rawSounds, rawWksp = {}, {}, {}, {}, {}, {}, {}, {}
     
-    local targets = {ReplicatedStorage, ReplicatedFirst, ServerScriptService, Lighting, StarterPlayer, StarterGui, SoundService}
+    -- Quét toàn diện tất cả các service bao gồm cả ReplicatedStorage, Workspace, Lighting,...
+    local targets = {ReplicatedStorage, ReplicatedFirst, Lighting, StarterPlayer, StarterGui, SoundService, Workspace}
     
     pcall(function()
         for _, folder in ipairs(targets) do
@@ -268,9 +269,20 @@ local function runScan()
             end
         end
         
-        for _, descendant in ipairs(ServerStorage:GetDescendants()) do
-            table.insert(rawSStore, descendant.Name)
-        end
+        -- Quét ServerStorage và ServerScriptService (Lưu ý: Client chạy qua executor đôi khi bị hạn chế quyền đọc 2 thư mục này)
+        pcall(function()
+            for _, descendant in ipairs(ServerStorage:GetDescendants()) do
+                table.insert(rawSStore, descendant.Name)
+            end
+        end)
+        
+        pcall(function()
+            for _, descendant in ipairs(ServerScriptService:GetDescendants()) do
+                if descendant:IsA("Script") then
+                    table.insert(rawServerScripts, descendant.Name)
+                end
+            end
+        end)
         
         for _, descendant in ipairs(Workspace:GetChildren()) do
             if descendant ~= LocalPlayer.Character then
@@ -290,7 +302,7 @@ local function runScan()
     
     populateListSafe(pageScript, scripts)
     populateListSafe(pageServer, serverScripts)
-    populateListSafe(pageSStore, sstoreItems)
+    populateListSafe(pageSStore, sstoreItems, " ServerStorage bị ẩn hoặc trống đối với Client.")
     populateListSafe(pageEvent, events)
     populateListSafe(pageTool, tools)
     populateListSafe(pageClient, clients)
