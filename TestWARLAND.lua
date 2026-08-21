@@ -1,4 +1,4 @@
--- [[ 🚀 WARLAND VN - V94: FULL OPTIONS (FLY, NOCLIP, INF JUMP, FULLBRIGHT, FOV, CLICK TP) ]][span_1](start_span)[span_1](end_span)
+-- [[ 🚀 WARLAND VN - V94: FULL OPTIONS (HỖ TRỢ CẢ PC & ĐIỆN THOẠI) ]]
 
 local player = game.Players.LocalPlayer
 local RunService = game:GetService("RunService")
@@ -24,7 +24,7 @@ _G.ClickTP = false
 _G.FullESP = false 
 local SelectedPlayer = nil
 
--- [ HÀM KÉO THẢ MENU ][span_2](start_span)[span_2](end_span)
+-- [ HÀM KÉO THẢ MENU ]
 local function MakeDraggable(obj)
     local dragging, dragInput, dragStart, startPos
     obj.InputBegan:Connect(function(input)
@@ -37,14 +37,14 @@ local function MakeDraggable(obj)
     UserInputService.InputChanged:Connect(function(input) if input == dragInput and dragging then local delta = input.Position - dragStart; obj.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y) end end)
 end
 
--- [ KHUNG MENU CHÍNH ][span_3](start_span)[span_3](end_span)
+-- [ KHUNG MENU CHÍNH ]
 local Main = Instance.new("Frame", ScreenGui)
 Main.Size = UDim2.new(0.55, 0, 0.75, 0); Main.Position = UDim2.new(0.5, 0, 0.5, 0); Main.AnchorPoint = Vector2.new(0.5, 0.5); Main.BackgroundColor3 = Color3.fromRGB(10, 10, 12); Main.Visible = false; Instance.new("UICorner", Main)
 local Aspect = Instance.new("UIAspectRatioConstraint", Main); Aspect.AspectRatio = 1.3
 Instance.new("UIStroke", Main).Color = Color3.fromRGB(0, 255, 255)
 MakeDraggable(Main)
 
--- [ CẤU TRÚC TAB ][span_4](start_span)[span_4](end_span)
+-- [ CẤU TRÚC TAB ]
 local Sidebar = Instance.new("Frame", Main); Sidebar.Size = UDim2.new(0.28, 0, 1, 0); Sidebar.BackgroundColor3 = Color3.fromRGB(15, 15, 18); Instance.new("UICorner", Sidebar)
 local TabList = Instance.new("Frame", Sidebar); TabList.Size = UDim2.new(1, 0, 1, 0); TabList.BackgroundTransparency = 1; local TabListLayout = Instance.new("UIListLayout", TabList); TabListLayout.Padding = UDim.new(0.01, 0)
 local Pages = Instance.new("Frame", Main); Pages.Position = UDim2.new(0.3, 0, 0.02, 0); Pages.Size = UDim2.new(0.68, 0, 0.96, 0); Pages.BackgroundTransparency = 1
@@ -69,7 +69,7 @@ local PageHome = CreateTab("🏠 HOME", true)
 local PagePlayer = CreateTab("👤 PLAYER", false)
 local PageESP = CreateTab("👁 ESP", false)
 
--- [ HÀM THANH KÉO TỐI ƯU (SLIDER) ][span_5](start_span)[span_5](end_span)
+-- [ HÀM THANH KÉO TỐI ƯU (SLIDER) ]
 local function AddSlider(parent, text, min, max, default, cb)
     local frame = Instance.new("Frame", parent); frame.Size = UDim2.new(0.96, 0, 0, 75); frame.BackgroundColor3 = Color3.fromRGB(25, 25, 30); Instance.new("UICorner", frame)
     local lbl = Instance.new("TextLabel", frame); lbl.Size = UDim2.new(1, 0, 0, 30); lbl.Text = text..": "..default; lbl.TextColor3 = Color3.new(1,1,1); lbl.Font = Enum.Font.GothamBold; lbl.TextSize = 15; lbl.BackgroundTransparency = 1
@@ -87,7 +87,7 @@ local function AddSlider(parent, text, min, max, default, cb)
     UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = false end end)
 end
 
--- [[ 🏠 TAB HOME ]][span_6](start_span)[span_6](end_span)
+-- [[ 🏠 TAB HOME ]]
 local function AddToggle(parent, text, defaultState, cb)
     local btn = Instance.new("TextButton", parent); btn.Size = UDim2.new(0.96, 0, 0, 45); btn.Text = text..": "..(defaultState and "ON" or "OFF"); btn.Font = Enum.Font.GothamBold; btn.TextSize = 16; btn.BackgroundColor3 = defaultState and Color3.fromRGB(0,180,100) or Color3.fromRGB(35,35,40); btn.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", btn)
     local state = defaultState
@@ -100,28 +100,17 @@ local function AddToggle(parent, text, defaultState, cb)
     return btn
 end
 
--- Fly Toggle
 AddToggle(PageHome, "FLY", false, function(v) _G.Flying = v end)
 AddSlider(PageHome, "TỐC ĐỘ BAY", 10, 500, 100, function(v) _G.FlySpeed = v end)
-
--- Noclip Toggle
 AddToggle(PageHome, "NOCLIP (XUYÊN TƯỜNG)", false, function(v) _G.Noclip = v end)
-
--- Infinite Jump Toggle
 AddToggle(PageHome, "NHẢY VÔ TẬN", false, function(v) _G.InfJump = v end)
-
--- Fullbright Toggle
 AddToggle(PageHome, "SÁNG TOÀN BẢN ĐỒ", false, function(v) _G.Fullbright = v end)
-
--- WalkSpeed & JumpPower
 AddSlider(PageHome, "TỐC ĐỘ CHẠY", 16, 350, 16, function(v) if player.Character and player.Character:FindFirstChild("Humanoid") then player.Character.Humanoid.WalkSpeed = v end end)
 AddSlider(PageHome, "NHẢY CAO", 50, 500, 50, function(v) if player.Character and player.Character:FindFirstChild("Humanoid") then player.Character.Humanoid.UseJumpPower = true; player.Character.Humanoid.JumpPower = v end end)
-
--- FOV Changer Slider
 AddSlider(PageHome, "GÓC NHÌN (FOV)", 70, 120, 70, function(v) Camera.FieldOfView = v end)
 
 
--- [[ 👤 TAB PLAYER ]][span_7](start_span)[span_7](end_span)
+-- [[ 👤 TAB PLAYER ]]
 local DropContainer = Instance.new("Frame", PagePlayer); DropContainer.Size = UDim2.new(0.96, 0, 0, 45); DropContainer.BackgroundColor3 = Color3.fromRGB(30,30,35); Instance.new("UICorner", DropContainer)
 local DropBtn = Instance.new("TextButton", DropContainer); DropBtn.Size = UDim2.new(1, 0, 1, 0); DropBtn.Text = "CHỌN PLAYER ▼"; DropBtn.Font = Enum.Font.GothamBold; DropBtn.TextSize = 16; DropBtn.TextColor3 = Color3.new(1,1,1); DropBtn.BackgroundTransparency = 1
 local DropListFrame = Instance.new("ScrollingFrame", PagePlayer); DropListFrame.Size = UDim2.new(0.96, 0, 0, 140); DropListFrame.Visible = false; DropListFrame.BackgroundColor3 = Color3.fromRGB(20,20,25); DropListFrame.ScrollBarThickness = 4; DropListFrame.ZIndex = 5
@@ -145,7 +134,6 @@ local function Act(p, t, c, cb)
     local b = Instance.new("TextButton", p); b.Size = UDim2.new(0.96, 0, 0, 45); b.Text = t; b.BackgroundColor3 = c; b.TextColor3 = Color3.new(1,1,1); b.Font = Enum.Font.GothamBold; b.TextSize = 16; Instance.new("UICorner", b); b.MouseButton1Click:Connect(cb)
 end
 
--- Hàm Super Teleport an toàn tránh kẹt đất
 local function SuperTeleport(targetCFrame)
     if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
     local hrp = player.Character.HumanoidRootPart
@@ -167,14 +155,15 @@ Act(PagePlayer, "KÉO HỌ LẠI", Color3.fromRGB(200, 100, 0), function()
     end 
 end)
 
-AddToggle(PagePlayer, "CLICK TO TP (CTRL + CLICK CHUỘT)", false, function(v) _G.ClickTP = v end)
+-- Đổi tên nút thành trực quan cho cả Mobile & PC
+AddToggle(PagePlayer, "CLICK / TAP TO TP", false, function(v) _G.ClickTP = v end)
 
 
--- [[ 👁 TAB ESP ]][span_8](start_span)[span_8](end_span)
+-- [[ 👁 TAB ESP ]]
 AddToggle(PageESP, "FULL ESP", false, function(v) _G.FullESP = v end)
 
 
--- [[ ⚙️ CÁC LUỒNG XỬ LÝ (LOOPS & EVENTS) ]][span_9](start_span)[span_9](end_span)
+-- [[ ⚙️ CÁC LUỒNG XỬ LÝ (LOOPS & EVENTS) ]]
 
 -- 1. Fly Logic
 task.spawn(function()
@@ -221,14 +210,36 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- 5. Click to TP Logic (Giữ Ctrl + Click chuột trái)
+-- 5. Click/Tap to TP Logic (Tương thích hoàn toàn với PC và Điện thoại)
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if not gameProcessed and _G.ClickTP and input.UserInputType == Enum.UserInputType.MouseButton1 then
-        if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) or UserInputService:IsKeyDown(Enum.KeyCode.RightControl) then
-            local mouse = player:GetMouse()
-            if mouse.Target and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                player.Character.HumanoidRootPart.CFrame = CFrame.new(mouse.Hit.Position + Vector3.new(0, 5, 0))
+    if not gameProcessed and _G.ClickTP then
+        local targetPos = nil
+
+        -- Dành cho PC (Giữ Ctrl + Click chuột trái)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) or UserInputService:IsKeyDown(Enum.KeyCode.RightControl) then
+                local mouse = player:GetMouse()
+                if mouse.Target then
+                    targetPos = mouse.Hit.Position
+                end
             end
+
+        -- Dành cho Điện thoại / Mobile (Chạm vào màn hình)
+        elseif input.UserInputType == Enum.UserInputType.Touch then
+            local unitRay = Camera:ScreenPointToRay(input.Position.X, input.Position.Y)
+            local raycastParams = RaycastParams.new()
+            raycastParams.FilterDescendantsInstances = {player.Character}
+            raycastParams.FilterType = Enum.RaycastFilterType.Exclude
+            
+            local raycastResult = workspace:Raycast(unitRay.Origin, unitRay.Direction * 10000, raycastParams)
+            if raycastResult then
+                targetPos = raycastResult.Position
+            end
+        end
+
+        -- Thực hiện dịch chuyển an toàn
+        if targetPos and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            player.Character.HumanoidRootPart.CFrame = CFrame.new(targetPos + Vector3.new(0, 5, 0))
         end
     end
 end)
@@ -250,6 +261,6 @@ end
 for _, p in pairs(game.Players:GetPlayers()) do ApplyESP(p) end
 game.Players.PlayerAdded:Connect(ApplyESP)
 
--- [ NÚT MỞ/ĐÓNG MENU (WL) ][span_10](start_span)[span_10](end_span)
+-- [ NÚT MỞ/ĐÓNG MENU (WL) ]
 local Toggle = Instance.new("TextButton", ScreenGui); Toggle.Size = UDim2.new(0, 65, 0, 65); Toggle.Position = UDim2.new(0.02, 0, 0.45, 0); Toggle.Text = "WL"; Toggle.Font = Enum.Font.GothamBold; Toggle.TextSize = 20; Toggle.BackgroundColor3 = Color3.fromRGB(15, 15, 20); Toggle.TextColor3 = Color3.fromRGB(0, 255, 255); Instance.new("UICorner", Toggle).CornerRadius = UDim.new(1, 0); MakeDraggable(Toggle)
 Toggle.MouseButton1Click:Connect(function() Main.Visible = not Main.Visible end)
