@@ -1,4 +1,4 @@
--- [[ 🚀 WARLAND VN - V97: MULTI-TAB SYSTEM (TỐI ƯU ĐIỆN THOẠI) ]]
+-- [[ 🚀 WARLAND VN - V97.1: MULTI-TAB & F3X FIX ]]
 
 local player = game.Players.LocalPlayer
 local RunService = game:GetService("RunService")
@@ -42,7 +42,7 @@ Main.Size = UDim2.new(0.78, 0, 0.85, 0); Main.Position = UDim2.new(0.5, 0, 0.5, 
 Instance.new("UIStroke", Main).Color = Color3.fromRGB(0, 255, 255)
 MakeDraggable(Main)
 
--- [ CẤU TRÚC TAB (CÓ THANH CUỘN CHO TAB LIST) ]
+-- [ CẤU TRÚC TAB ]
 local Sidebar = Instance.new("Frame", Main); Sidebar.Size = UDim2.new(0.28, 0, 1, 0); Sidebar.BackgroundColor3 = Color3.fromRGB(15, 15, 18); Instance.new("UICorner", Sidebar)
 local TabList = Instance.new("ScrollingFrame", Sidebar); TabList.Size = UDim2.new(1, 0, 1, 0); TabList.BackgroundTransparency = 1; TabList.ScrollBarThickness = 2
 local TabListLayout = Instance.new("UIListLayout", TabList); TabListLayout.Padding = UDim.new(0, 6)
@@ -75,7 +75,7 @@ local PagePlayer = CreateTab("👤 PLAYER", false)
 local PageESP = CreateTab("👁 ESP", false)
 local PageTools = CreateTab("🛠 TOOLS", false)
 
--- [ HÀM THANH KÉO (SLIDER) & TOGGLE TO RỘNG CHO ĐT ]
+-- [ HÀM GIAO DIỆN PHỤ ]
 local function AddSlider(parent, text, min, max, default, cb)
     local frame = Instance.new("Frame", parent); frame.Size = UDim2.new(0.96, 0, 0, 80); frame.BackgroundColor3 = Color3.fromRGB(25, 25, 30); Instance.new("UICorner", frame)
     local lbl = Instance.new("TextLabel", frame); lbl.Size = UDim2.new(1, 0, 0, 32); lbl.Text = text..": "..default; lbl.TextColor3 = Color3.new(1,1,1); lbl.Font = Enum.Font.GothamBold; lbl.TextSize = 16; lbl.BackgroundTransparency = 1
@@ -177,7 +177,7 @@ AddToggle(PagePlayer, "CLICK / TAP TO TP", false, function(v) _G.ClickTP = v end
 AddToggle(PageESP, "FULL ESP", false, function(v) _G.FullESP = v end)
 
 
--- [[ 🛠 TAB TOOLS ]]
+-- [[ 🛠 TAB TOOLS (CÓ BẮT LỖI F3X) ]]
 local F3XBtn = Instance.new("TextButton", PageTools)
 F3XBtn.Size = UDim2.new(0.96, 0, 0, 50)
 F3XBtn.Text = "🛠 LẤY BUILDING TOOL (F3X)"
@@ -188,12 +188,21 @@ F3XBtn.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", F3XBtn)
 
 F3XBtn.MouseButton1Click:Connect(function()
-    pcall(function()
+    F3XBtn.Text = "⏳ ĐANG TẢI F3X..."
+    local success, err = pcall(function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/F3XTeam/F3X/main/loader.lua"))()
     end)
-    F3XBtn.Text = "✅ ĐÃ KÍCH HOẠT F3X!"
-    task.wait(1.5)
-    F3XBtn.Text = "🛠 LẤY BUILDING TOOL (F3X)"
+    
+    if success then
+        F3XBtn.Text = "✅ ĐÃ KÍCH HOẠT F3X!"
+        task.wait(1.5)
+        F3XBtn.Text = "🛠 LẤY BUILDING TOOL (F3X)"
+    else
+        F3XBtn.Text = "❌ BỊ CHẶN HOẶC LỖI EXECUTOR!"
+        warn("F3X Error: ", err)
+        task.wait(2)
+        F3XBtn.Text = "🛠 LẤY BUILDING TOOL (F3X)"
+    end
 end)
 
 
