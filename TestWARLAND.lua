@@ -1,4 +1,4 @@
--- [[ 🚀 WARLAND VN - V97.1: MULTI-TAB & F3X FIX ]]
+-- [[ 🚀 WARLAND VN - V97.3: CLEAN VERSION + TOOL CLICK TP ]]
 
 local player = game.Players.LocalPlayer
 local RunService = game:GetService("RunService")
@@ -73,9 +73,8 @@ local PageHome = CreateTab("🏠 HOME", true)
 local PageMovement = CreateTab("🏃 MOVEMENT", false)
 local PagePlayer = CreateTab("👤 PLAYER", false)
 local PageESP = CreateTab("👁 ESP", false)
-local PageTools = CreateTab("🛠 TOOLS", false)
 
--- [ HÀM GIAO DIỆN PHỤ ]
+-- [ CÁC HÀM UI ]
 local function AddSlider(parent, text, min, max, default, cb)
     local frame = Instance.new("Frame", parent); frame.Size = UDim2.new(0.96, 0, 0, 80); frame.BackgroundColor3 = Color3.fromRGB(25, 25, 30); Instance.new("UICorner", frame)
     local lbl = Instance.new("TextLabel", frame); lbl.Size = UDim2.new(1, 0, 0, 32); lbl.Text = text..": "..default; lbl.TextColor3 = Color3.new(1,1,1); lbl.Font = Enum.Font.GothamBold; lbl.TextSize = 16; lbl.BackgroundTransparency = 1
@@ -105,14 +104,12 @@ local function AddToggle(parent, text, defaultState, cb)
     return btn
 end
 
-
--- [[ 🏠 TAB HOME ]]
+-- [ TAB HOME ]
 AddToggle(PageHome, "SÁNG TOÀN BẢN ĐỒ", false, function(v) _G.Fullbright = v end)
 AddToggle(PageHome, "CHỐNG AFK (TREO MÁY)", false, function(v) _G.AntiAFK = v end)
 AddSlider(PageHome, "GÓC NHÌN (FOV)", 70, 120, 70, function(v) Camera.FieldOfView = v end)
 
-
--- [[ 🏃 TAB MOVEMENT ]]
+-- [ TAB MOVEMENT ]
 AddToggle(PageMovement, "FLY", false, function(v) _G.Flying = v end)
 AddSlider(PageMovement, "TỐC ĐỘ BAY", 10, 500, 100, function(v) _G.FlySpeed = v end)
 AddToggle(PageMovement, "NOCLIP (XUYÊN TƯỜNG)", false, function(v) _G.Noclip = v end)
@@ -120,8 +117,7 @@ AddToggle(PageMovement, "NHẢY VÔ TẬN", false, function(v) _G.InfJump = v en
 AddSlider(PageMovement, "TỐC ĐỘ CHẠY", 16, 350, 16, function(v) if player.Character and player.Character:FindFirstChild("Humanoid") then player.Character.Humanoid.WalkSpeed = v end end)
 AddSlider(PageMovement, "NHẢY CAO", 50, 500, 50, function(v) if player.Character and player.Character:FindFirstChild("Humanoid") then player.Character.Humanoid.UseJumpPower = true; player.Character.Humanoid.JumpPower = v end end)
 
-
--- [[ 👤 TAB PLAYER ]]
+-- [ TAB PLAYER ]
 local DropContainer = Instance.new("Frame", PagePlayer); DropContainer.Size = UDim2.new(0.96, 0, 0, 50); DropContainer.BackgroundColor3 = Color3.fromRGB(30,30,35); Instance.new("UICorner", DropContainer)
 local DropBtn = Instance.new("TextButton", DropContainer); DropBtn.Size = UDim2.new(1, 0, 1, 0); DropBtn.Text = "CHỌN PLAYER ▼"; DropBtn.Font = Enum.Font.GothamBold; DropBtn.TextSize = 16; DropBtn.TextColor3 = Color3.new(1,1,1); DropBtn.BackgroundTransparency = 1
 local DropListFrame = Instance.new("ScrollingFrame", PagePlayer); DropListFrame.Size = UDim2.new(0.96, 0, 0, 160); DropListFrame.Visible = false; DropListFrame.BackgroundColor3 = Color3.fromRGB(20,20,25); DropListFrame.ScrollBarThickness = 6; DropListFrame.ZIndex = 5
@@ -145,69 +141,27 @@ local function Act(p, t, c, cb)
     local b = Instance.new("TextButton", p); b.Size = UDim2.new(0.96, 0, 0, 50); b.Text = t; b.BackgroundColor3 = c; b.TextColor3 = Color3.new(1,1,1); b.Font = Enum.Font.GothamBold; b.TextSize = 16; Instance.new("UICorner", b); b.MouseButton1Click:Connect(cb)
 end
 
-local function SuperTeleport(targetCFrame)
-    if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
-    local hrp = player.Character.HumanoidRootPart
-    pcall(function() player:RequestStreamAroundAsync(targetCFrame.Position) end)
-    hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-    hrp.CFrame = targetCFrame + Vector3.new(0, 50, 0)
-    task.wait(0.5)
-end
-
 Act(PagePlayer, "TELE ĐẾN HỌ (SIÊU XA)", Color3.fromRGB(0, 120, 200), function() 
     if not SelectedPlayer then
         DropBtn.Text = "LỖI: CHƯA CHỌN PLAYER!"
-        task.wait(1.5)
-        DropBtn.Text = "CHỌN PLAYER ▼"
+        task.wait(1.5); DropBtn.Text = "CHỌN PLAYER ▼"
         return
     end
     if SelectedPlayer.Character and SelectedPlayer.Character:FindFirstChild("HumanoidRootPart") then 
-        SuperTeleport(SelectedPlayer.Character.HumanoidRootPart.CFrame)
+        local hrp = player.Character.HumanoidRootPart
+        pcall(function() player:RequestStreamAroundAsync(SelectedPlayer.Character.HumanoidRootPart.Position) end)
+        hrp.CFrame = SelectedPlayer.Character.HumanoidRootPart.CFrame + Vector3.new(0, 5, 0)
     else
         DropBtn.Text = "LỖI: HỌ ĐANG CHẾT/ĐANG TẢI!"
-        task.wait(1.5)
-        DropBtn.Text = "ĐÃ CHỌN: " .. SelectedPlayer.DisplayName
+        task.wait(1.5); DropBtn.Text = "ĐÃ CHỌN: " .. SelectedPlayer.DisplayName
     end
 end)
-
 AddToggle(PagePlayer, "CLICK / TAP TO TP", false, function(v) _G.ClickTP = v end)
 
-
--- [[ 👁 TAB ESP ]]
+-- [ TAB ESP ]
 AddToggle(PageESP, "FULL ESP", false, function(v) _G.FullESP = v end)
 
-
--- [[ 🛠 TAB TOOLS (ĐÃ FIX LINK F3X DỰ PHÒNG) ]]
-local F3XBtn = Instance.new("TextButton", PageTools)
-F3XBtn.Size = UDim2.new(0.96, 0, 0, 50)
-F3XBtn.Text = "🛠 LẤY BUILDING TOOL (F3X)"
-F3XBtn.Font = Enum.Font.GothamBold
-F3XBtn.TextSize = 16
-F3XBtn.BackgroundColor3 = Color3.fromRGB(220, 110, 0)
-F3XBtn.TextColor3 = Color3.new(1,1,1)
-Instance.new("UICorner", F3XBtn)
-
-F3XBtn.MouseButton1Click:Connect(function()
-    F3XBtn.Text = "⏳ ĐANG TẢI F3X..."
-    
-    -- Sử dụng link mirror/fork thay thế cho link gốc đã bị xóa
-    local success, err = pcall(function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/FFplyer/F3X/main/loader.lua"))()
-    end)
-    
-    if success then
-        F3XBtn.Text = "✅ ĐÃ KÍCH HOẠT F3X!"
-        task.wait(1.5)
-        F3XBtn.Text = "🛠 LẤY BUILDING TOOL (F3X)"
-    else
-        F3XBtn.Text = "❌ LINK LỖI HOẶC BỊ GAME CHẶN!"
-        warn("F3X Error: ", err)
-        task.wait(2)
-        F3XBtn.Text = "🛠 LẤY BUILDING TOOL (F3X)"
-    end
-end)
-
--- [[ ⚙️ CÁC LUỒNG XỬ LÝ (LOOPS & EVENTS) ]]
+-- [ CÁC LUỒNG XỬ LÝ (LOGIC) ]
 
 -- 1. Fly Logic
 task.spawn(function()
@@ -230,9 +184,7 @@ end)
 -- 2. Noclip Logic
 RunService.Stepped:Connect(function()
     if _G.Noclip and player.Character then
-        for _, v in pairs(player.Character:GetDescendants()) do
-            if v:IsA("BasePart") then v.CanCollide = false end
-        end
+        for _, v in pairs(player.Character:GetDescendants()) do if v:IsA("BasePart") then v.CanCollide = false end end
     end
 end)
 
@@ -247,44 +199,38 @@ end)
 -- 4. Fullbright Logic
 RunService.RenderStepped:Connect(function()
     if _G.Fullbright then
-        Lighting.Brightness = 2
-        Lighting.ClockTime = 14
-        Lighting.GlobalShadows = false
-        Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
+        Lighting.Brightness = 2; Lighting.ClockTime = 14; Lighting.GlobalShadows = false; Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
     end
 end)
 
 -- 5. Anti-AFK Logic
 local vu = game:GetService("VirtualUser")
 player.Idled:Connect(function()
-    if _G.AntiAFK then
-        vu:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-        task.wait(1)
-        vu:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-    end
+    if _G.AntiAFK then vu:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame); task.wait(1); vu:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame) end
 end)
 
--- 6. Click/Tap to TP Logic
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if not gameProcessed and _G.ClickTP then
-        local targetPos = nil
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) or UserInputService:IsKeyDown(Enum.KeyCode.RightControl) then
-                local mouse = player:GetMouse()
-                if mouse.Target then targetPos = mouse.Hit.Position end
+-- 6. Click TP Tool Logic
+local function GiveClickTPTool()
+    if player.Backpack:FindFirstChild("Click TP") or (player.Character and player.Character:FindFirstChild("Click TP")) then return end
+    local tool = Instance.new("Tool")
+    tool.Name = "Click TP"
+    tool.RequiresHandle = false
+    tool.Parent = player.Backpack
+
+    tool.Activated:Connect(function()
+        if _G.ClickTP then
+            local mouse = player:GetMouse()
+            if mouse.Target and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                player.Character.HumanoidRootPart.CFrame = CFrame.new(mouse.Hit.Position + Vector3.new(0, 5, 0))
             end
-        elseif input.UserInputType == Enum.UserInputType.Touch then
-            local unitRay = Camera:ScreenPointToRay(input.Position.X, input.Position.Y)
-            local raycastParams = RaycastParams.new()
-            raycastParams.FilterDescendantsInstances = {player.Character}
-            raycastParams.FilterType = Enum.RaycastFilterType.Exclude
-            local raycastResult = workspace:Raycast(unitRay.Origin, unitRay.Direction * 10000, raycastParams)
-            if raycastResult then targetPos = raycastResult.Position end
         end
-        if targetPos and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            player.Character.HumanoidRootPart.CFrame = CFrame.new(targetPos + Vector3.new(0, 5, 0))
-        end
-    end
+    end)
+end
+
+GiveClickTPTool()
+player.CharacterAdded:Connect(function()
+    task.wait(1)
+    GiveClickTPTool()
 end)
 
 -- 7. ESP Logic
@@ -296,9 +242,7 @@ local function ApplyESP(p)
         if _G.FullESP and p.Character and p.Character:FindFirstChild("HumanoidRootPart") and p ~= player then
             hl.Parent = p.Character; bill.Parent = p.Character:FindFirstChild("Head")
             lbl.Text = p.DisplayName .. "\n[" .. math.floor((player.Character.HumanoidRootPart.Position - p.Character.HumanoidRootPart.Position).Magnitude) .."m]"
-        else 
-            hl.Parent = nil; bill.Parent = nil 
-        end
+        else hl.Parent = nil; bill.Parent = nil end
     end)
 end
 for _, p in pairs(game.Players:GetPlayers()) do ApplyESP(p) end
