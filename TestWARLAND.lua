@@ -1,4 +1,4 @@
--- [[ 🚀 WARLAND VN - V95: FULL OPTIONS (GIAO DIỆN TO TỐI ƯU CHO ĐIỆN THOẠI) ]]
+-- [[ 🚀 WARLAND VN - V96: FULL OPTIONS (GIAO DIỆN TO CHO ĐIỆN THOẠI) ]]
 
 local player = game.Players.LocalPlayer
 local RunService = game:GetService("RunService")
@@ -7,10 +7,10 @@ local Lighting = game:GetService("Lighting")
 local Camera = workspace.CurrentCamera
 local TargetParent = (game:GetService("CoreGui") or player:WaitForChild("PlayerGui"))
 
-if TargetParent:FindFirstChild("WarLand_V95") then TargetParent.WarLand_V95:Destroy() end
+if TargetParent:FindFirstChild("WarLand_V96") then TargetParent.WarLand_V96:Destroy() end
 
 local ScreenGui = Instance.new("ScreenGui", TargetParent)
-ScreenGui.Name = "WarLand_V95"
+ScreenGui.Name = "WarLand_V96"
 
 -- [ BIẾN HỆ THỐNG ]
 _G.FlySpeed = 100
@@ -23,7 +23,6 @@ _G.Fullbright = false
 _G.ClickTP = false
 _G.FullESP = false 
 _G.AntiAFK = false
-_G.LowGravity = false
 local SelectedPlayer = nil
 
 -- [ HÀM KÉO THẢ MENU ]
@@ -39,7 +38,7 @@ local function MakeDraggable(obj)
     UserInputService.InputChanged:Connect(function(input) if input == dragInput and dragging then local delta = input.Position - dragStart; obj.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y) end end)
 end
 
--- [ KHUNG MENU CHÍNH - LÀM TO HƠN CHO ĐIỆN THOẠI ]
+-- [ KHUNG MENU CHÍNH - TO RỘNG CHO ĐIỆN THOẠI ]
 local Main = Instance.new("Frame", ScreenGui)
 Main.Size = UDim2.new(0.78, 0, 0.85, 0); Main.Position = UDim2.new(0.5, 0, 0.5, 0); Main.AnchorPoint = Vector2.new(0.5, 0.5); Main.BackgroundColor3 = Color3.fromRGB(10, 10, 12); Main.Visible = false; Instance.new("UICorner", Main)
 Instance.new("UIStroke", Main).Color = Color3.fromRGB(0, 255, 255)
@@ -110,23 +109,6 @@ AddSlider(PageHome, "TỐC ĐỘ CHẠY", 16, 350, 16, function(v) if player.Cha
 AddSlider(PageHome, "NHẢY CAO", 50, 500, 50, function(v) if player.Character and player.Character:FindFirstChild("Humanoid") then player.Character.Humanoid.UseJumpPower = true; player.Character.Humanoid.JumpPower = v end end)
 AddSlider(PageHome, "GÓC NHÌN (FOV)", 70, 120, 70, function(v) Camera.FieldOfView = v end)
 AddToggle(PageHome, "CHỐNG AFK (TREO MÁY)", false, function(v) _G.AntiAFK = v end)
-
-local DashBtn = Instance.new("TextButton", PageHome)
-DashBtn.Size = UDim2.new(0.96, 0, 0, 50)
-DashBtn.Text = "⚡ LƯỚT NHANH (DASH)"
-DashBtn.Font = Enum.Font.GothamBold
-DashBtn.TextSize = 16
-DashBtn.BackgroundColor3 = Color3.fromRGB(120, 0, 200)
-DashBtn.TextColor3 = Color3.new(1,1,1)
-Instance.new("UICorner", DashBtn)
-DashBtn.MouseButton1Click:Connect(function()
-    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-        local hrp = player.Character.HumanoidRootPart
-        hrp.CFrame = hrp.CFrame + (Camera.CFrame.LookVector * 15)
-    end
-end)
-
-AddToggle(PageHome, "TRỌNG LỰC THẤP", false, function(v) _G.LowGravity = v end)
 
 
 -- [[ 👤 TAB PLAYER ]]
@@ -242,25 +224,7 @@ player.Idled:Connect(function()
     end
 end)
 
--- 6. Low Gravity Logic
-RunService.Stepped:Connect(function()
-    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-        local char = player.Character
-        if _G.LowGravity then
-            if not char:FindFirstChild("CustomGravity") then
-                local grav = Instance.new("BodyForce", char.HumanoidRootPart)
-                grav.Name = "CustomGravity"
-                grav.Force = Vector3.new(0, char.HumanoidRootPart:GetMass() * 350, 0)
-            end
-        else
-            if char:FindFirstChild("CustomGravity") then
-                char.CustomGravity:Destroy()
-            end
-        end
-    end
-end)
-
--- 7. Click/Tap to TP Logic
+-- 6. Click/Tap to TP Logic
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if not gameProcessed and _G.ClickTP then
         local targetPos = nil
@@ -283,7 +247,7 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
--- 8. ESP Logic
+-- 7. ESP Logic
 local function ApplyESP(p)
     local hl = Instance.new("Highlight")
     local bill = Instance.new("BillboardGui", ScreenGui); bill.AlwaysOnTop = true; bill.Size = UDim2.new(0, 200, 0, 50); bill.ExtentsOffset = Vector3.new(0, 3, 0)
