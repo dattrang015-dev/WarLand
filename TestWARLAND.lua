@@ -177,7 +177,7 @@ AddToggle(PagePlayer, "CLICK / TAP TO TP", false, function(v) _G.ClickTP = v end
 AddToggle(PageESP, "FULL ESP", false, function(v) _G.FullESP = v end)
 
 
--- [[ 🛠 TAB TOOLS (CÓ BẮT LỖI F3X) ]]
+-- [[ 🛠 TAB TOOLS (ĐÃ FIX LINK F3X DỰ PHÒNG) ]]
 local F3XBtn = Instance.new("TextButton", PageTools)
 F3XBtn.Size = UDim2.new(0.96, 0, 0, 50)
 F3XBtn.Text = "🛠 LẤY BUILDING TOOL (F3X)"
@@ -189,8 +189,10 @@ Instance.new("UICorner", F3XBtn)
 
 F3XBtn.MouseButton1Click:Connect(function()
     F3XBtn.Text = "⏳ ĐANG TẢI F3X..."
+    
+    -- Sử dụng link mirror/fork thay thế cho link gốc đã bị xóa
     local success, err = pcall(function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/F3XTeam/F3X/main/loader.lua"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/FFplyer/F3X/main/loader.lua"))()
     end)
     
     if success then
@@ -198,13 +200,12 @@ F3XBtn.MouseButton1Click:Connect(function()
         task.wait(1.5)
         F3XBtn.Text = "🛠 LẤY BUILDING TOOL (F3X)"
     else
-        F3XBtn.Text = "❌ BỊ CHẶN HOẶC LỖI EXECUTOR!"
+        F3XBtn.Text = "❌ LINK LỖI HOẶC BỊ GAME CHẶN!"
         warn("F3X Error: ", err)
         task.wait(2)
         F3XBtn.Text = "🛠 LẤY BUILDING TOOL (F3X)"
     end
 end)
-
 
 -- [[ ⚙️ CÁC LUỒNG XỬ LÝ (LOOPS & EVENTS) ]]
 
