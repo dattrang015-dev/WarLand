@@ -1,7 +1,7 @@
 -- ====================================================================================
--- ||  🚀 WARLAND VN - V99.0: ELITE EXCLUSIVE EDITION                                ||
+-- ||  🚀 WARLAND VN - V100.0: ULTIMATE SOVEREIGN EXCLUSIVE EDITION                  ||
 -- ||  ============================================================================  ||
--- ||  STATUS: [STABLE / EXCLUSIVE] | FEATURES: FULL PACK + CUSTOM EXCLUSIVES        ||
+-- ||  STATUS: [STABLE / SOVEREIGN] | FEATURES: FULL PACK + 100% EXCLUSIVE TECH      ||
 -- ====================================================================================
 
 local player = game.Players.LocalPlayer
@@ -12,12 +12,12 @@ local TweenService = game:GetService("TweenService")
 local Camera = workspace.CurrentCamera
 local TargetParent = (game:GetService("CoreGui") or player:WaitForChild("PlayerGui"))
 
-if TargetParent:FindFirstChild("WarLand_V99_Exclusive") then 
-    TargetParent.WarLand_V99_Exclusive:Destroy() 
+if TargetParent:FindFirstChild("WarLand_V100_Sovereign") then 
+    TargetParent.WarLand_V100_Sovereign:Destroy() 
 end
 
 local ScreenGui = Instance.new("ScreenGui", TargetParent)
-ScreenGui.Name = "WarLand_V99_Exclusive"
+ScreenGui.Name = "WarLand_V100_Sovereign"
 
 -- [ BIẾN HỆ THỐNG VÀ CẤU HÌNH ĐỘC QUYỀN ]
 _G.FlySpeed = 100
@@ -32,13 +32,17 @@ _G.DashButton = false
 _G.TPFlyToPlayer = false
 _G.InfZoom = false
 
--- Tính năng độc quyền mới
+-- Tính năng độc quyền trước đó
 _G.AntiVoid = false
 _G.HitboxExpander = false
 _G.HitboxSize = 15
 _G.CameraAimbot = false
 _G.RainbowUI = false
 _G.SavedPosition = nil
+
+-- ✨ TÍNH NĂNG ĐỘC QUYỀN MỚI 100% CHỈ WARLAND MỚI CÓ
+_G.WarLandEMP = false
+_G.GhostCloak = false
 
 local SelectedPlayer = nil
 local AFKConnection = nil
@@ -84,6 +88,45 @@ local function ToggleAntiVoid(state)
             end
         end
     end)
+end
+
+-- [ TÍNH NĂNG ĐỘC QUYỀN CHỈ WARLAND CÓ: EMP SHOCKWAVE PULSE ]
+local function RunWarLandEMPModule()
+    task.spawn(function()
+        while task.wait(0.3) do
+            if _G.WarLandEMP and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                local myHRP = player.Character.HumanoidRootPart
+                for _, p in pairs(game.Players:GetPlayers()) do
+                    if p ~= player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                        local enemyHRP = p.Character.HumanoidRootPart
+                        local dist = (myHRP.Position - enemyHRP.Position).Magnitude
+                        if dist < 18 then
+                            -- Hất văng kẻ địch ra xa ngay lập tức bằng lực vector hướng ra ngoài
+                            local pushDirection = (enemyHRP.Position - myHRP.Position).Unit
+                            enemyHRP.Velocity = pushDirection * 120 + Vector3.new(0, 50, 0)
+                        end
+                    end
+                end
+            end
+        end
+    end)
+end
+RunWarLandEMPModule()
+
+-- [ TÍNH NĂNG ĐỘC QUYỀN CHỈ WARLAND CÓ: GHOST STEALTH CLOAK ]
+local function ToggleGhostCloak(state)
+    _G.GhostCloak = state
+    if player.Character then
+        for _, part in pairs(player.Character:GetDescendants()) do
+            if part:IsA("BasePart") or part:IsA("MeshPart") then
+                if state then
+                    part.Transparency = 0.75
+                else
+                    part.Transparency = (part.Name == "HumanoidRootPart" and 1 or 0)
+                end
+            end
+        end
+    end
 end
 
 -- [ TÍNH NĂNG ĐỘC QUYỀN: CAMERA LOCK-ON (AIMBOT NHẸ) ]
@@ -244,7 +287,7 @@ local TabListLayout = Instance.new("UIListLayout", TabList); TabListLayout.Paddi
 local Pages = Instance.new("Frame", Main); Pages.Position = UDim2.new(0.3, 0, 0.02, 0); Pages.Size = UDim2.new(0.68, 0, 0.96, 0); Pages.BackgroundTransparency = 1
 
 local function CreateTab(name, isFirst)
-    local b = Instance.new("TextButton", TabList); b.Size = UDim2.new(1, -4, 0, 48); b.Text = name; b.Font = Enum.Font.GothamBold; b.TextSize = 14; b.BackgroundColor3 = isFirst and Color3.fromRGB(0,255,255) or Color3.fromRGB(24,24,30); b.TextColor3 = isFirst and Color3.new(0,0,0) or Color3.new(1,1,1); b.BorderSizePixel = 0; Instance.new("UICorner", b)
+    local b = Instance.new("TextButton", TabList); b.Size = UDim2.new(1, -4, 0, 48); b.Text = name; b.Font = Enum.Font.GothamBold; b.TextSize = 13; b.BackgroundColor3 = isFirst and Color3.fromRGB(0,255,255) or Color3.fromRGB(24,24,30); b.TextColor3 = isFirst and Color3.new(0,0,0) or Color3.new(1,1,1); b.BorderSizePixel = 0; Instance.new("UICorner", b)
     local p = Instance.new("ScrollingFrame", Pages); p.Size = UDim2.new(1, 0, 1, 0); p.Visible = isFirst; p.BackgroundTransparency = 1; p.ScrollBarThickness = 6
     local pLayout = Instance.new("UIListLayout", p); pLayout.Padding = UDim.new(0.02, 0)
     pLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
@@ -258,14 +301,15 @@ local function CreateTab(name, isFirst)
     return p
 end
 
-local PageHome = CreateTab("🏠 HOME & EXCLUSIVE", true)
+local PageHome = CreateTab("🏠 HOME", true)
 local PageMovement = CreateTab("🏃 MOVEMENT", false)
-local PageCombat = CreateTab("⚔️ COMBAT & EXCLUSIVE", false)
+local PageCombat = CreateTab("⚔️ COMBAT", false)
 local PagePlayer = CreateTab("👤 PLAYER", false)
-local PageESP = CreateTab("👁 ESP & VISUAL", false)
+local PageESP = CreateTab("👁 ESP", false)
+local PageWarLandExclusive = CreateTab("🔥 WARLAND EXCLUSIVE", false) -- TAB ĐỘC QUYỀN MỚI
 
 local function AddToggle(parent, text, defaultState, cb)
-    local btn = Instance.new("TextButton", parent); btn.Size = UDim2.new(0.96, 0, 0, 48); btn.Text = text..": "..(defaultState and "ON" or "OFF"); btn.Font = Enum.Font.GothamBold; btn.TextSize = 15; btn.BackgroundColor3 = defaultState and Color3.fromRGB(0,180,100) or Color3.fromRGB(35,35,42); btn.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", btn)
+    local btn = Instance.new("TextButton", parent); btn.Size = UDim2.new(0.96, 0, 0, 48); btn.Text = text..": "..(defaultState and "ON" or "OFF"); btn.Font = Enum.Font.GothamBold; btn.TextSize = 14; btn.BackgroundColor3 = defaultState and Color3.fromRGB(0,180,100) or Color3.fromRGB(35,35,42); btn.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", btn)
     local state = defaultState
     btn.MouseButton1Click:Connect(function()
         state = not state
@@ -277,7 +321,7 @@ end
 
 local function AddSlider(parent, text, min, max, default, cb)
     local frame = Instance.new("Frame", parent); frame.Size = UDim2.new(0.96, 0, 0, 75); frame.BackgroundColor3 = Color3.fromRGB(25, 25, 32); Instance.new("UICorner", frame)
-    local lbl = Instance.new("TextLabel", frame); lbl.Size = UDim2.new(1, 0, 0, 30); lbl.Text = text..": "..default; lbl.TextColor3 = Color3.new(1,1,1); lbl.Font = Enum.Font.GothamBold; lbl.TextSize = 15; lbl.BackgroundTransparency = 1
+    local lbl = Instance.new("TextLabel", frame); lbl.Size = UDim2.new(1, 0, 0, 30); lbl.Text = text..": "..default; lbl.TextColor3 = Color3.new(1,1,1); lbl.Font = Enum.Font.GothamBold; lbl.TextSize = 14; lbl.BackgroundTransparency = 1
     local sBg = Instance.new("Frame", frame); sBg.Size = UDim2.new(0.85, 0, 0, 8); sBg.Position = UDim2.new(0.07,0,0,48); sBg.BackgroundColor3 = Color3.fromRGB(45,45,55); Instance.new("UICorner", sBg)
     local sFill = Instance.new("Frame", sBg); sFill.Size = UDim2.new((default-min)/(max-min), 0, 1, 0); sFill.BackgroundColor3 = Color3.fromRGB(0,255,255); Instance.new("UICorner", sFill)
     local btn = Instance.new("TextButton", sBg); btn.Size = UDim2.new(0, 24, 0, 24); btn.AnchorPoint = Vector2.new(0.5,0.5); btn.Position = UDim2.new(sFill.Size.X.Scale, 0, 0.5, 0); btn.Text = ""; Instance.new("UICorner", btn)
@@ -293,14 +337,14 @@ local function AddSlider(parent, text, min, max, default, cb)
 end
 
 local function Act(p, t, c, cb)
-    local b = Instance.new("TextButton", p); b.Size = UDim2.new(0.96, 0, 0, 48); b.Text = t; b.BackgroundColor3 = c; b.TextColor3 = Color3.new(1,1,1); b.Font = Enum.Font.GothamBold; b.TextSize = 15; Instance.new("UICorner", b); b.MouseButton1Click:Connect(cb)
+    local b = Instance.new("TextButton", p); b.Size = UDim2.new(0.96, 0, 0, 48); b.Text = t; b.BackgroundColor3 = c; b.TextColor3 = Color3.new(1,1,1); b.Font = Enum.Font.GothamBold; b.TextSize = 14; Instance.new("UICorner", b); b.MouseButton1Click:Connect(cb)
 end
 
--- [ TAB 1: HOME & EXCLUSIVE ]
+-- [ TAB 1: HOME ]
 AddToggle(PageHome, "SÁNG TOÀN BẢN ĐỒ (FULLBRIGHT)", false, function(v) _G.Fullbright = v end)
 AddToggle(PageHome, "CHỐNG AFK (TREO MÁY)", false, function(v) ToggleAFK(v) end)
-AddToggle(PageHome, "🛡 ANTI-VOID (CHỐNG RƠI VỰC - ĐỘC QUYỀN)", false, function(v) ToggleAntiVoid(v) end)
-AddToggle(PageHome, "🌈 GIAO DIỆN MÀU RAINBOW RGB (ĐỘC QUYỀN)", false, function(v) ToggleRainbowUI(v) end)
+AddToggle(PageHome, "🛡 ANTI-VOID (CHỐNG RƠI VỰC)", false, function(v) ToggleAntiVoid(v) end)
+AddToggle(PageHome, "🌈 GIAO DIỆN MÀU RAINBOW RGB", false, function(v) ToggleRainbowUI(v) end)
 AddSlider(PageHome, "GÓC NHÌN FOV", 70, 120, 70, function(v) Camera.FieldOfView = v end)
 AddToggle(PageHome, "ZOOM VÔ HẠN", false, function(v) _G.InfZoom = v end)
 
@@ -313,14 +357,14 @@ AddSlider(PageMovement, "TỐC ĐỘ CHẠY", 16, 350, 16, function(v) if player
 AddSlider(PageMovement, "NHẢY CAO", 50, 500, 50, function(v) if player.Character and player.Character:FindFirstChild("Humanoid") then player.Character.Humanoid.UseJumpPower = true; player.Character.Humanoid.JumpPower = v end end)
 AddToggle(PageMovement, "⚡ NÚT LƯỚT NHANH (SMOOTH DASH)", false, function(v) ToggleDashButton(v) end)
 
--- [ TAB 3: COMBAT & EXCLUSIVE ]
-AddToggle(PageCombat, "🎯 CAMERA LOCK-ON AIMBOT (ĐỘC QUYỀN)", false, function(v) _G.CameraAimbot = v end)
-AddToggle(PageCombat, "📦 HITBOX EXPANDER (ĐỘC QUYỀN)", false, function(v) _G.HitboxExpander = v end)
+-- [ TAB 3: COMBAT ]
+AddToggle(PageCombat, "🎯 CAMERA LOCK-ON AIMBOT", false, function(v) _G.CameraAimbot = v end)
+AddToggle(PageCombat, "📦 HITBOX EXPANDER", false, function(v) _G.HitboxExpander = v end)
 AddSlider(PageCombat, "KÍCH THƯỚC HITBOX", 5, 50, 15, function(v) _G.HitboxSize = v end)
 
 -- [ TAB 4: PLAYER ]
 local DropContainer = Instance.new("Frame", PagePlayer); DropContainer.Size = UDim2.new(0.96, 0, 0, 48); DropContainer.BackgroundColor3 = Color3.fromRGB(30,30,38); Instance.new("UICorner", DropContainer)
-local DropBtn = Instance.new("TextButton", DropContainer); DropBtn.Size = UDim2.new(1, 0, 1, 0); DropBtn.Text = "CHỌN PLAYER ▼"; DropBtn.Font = Enum.Font.GothamBold; DropBtn.TextSize = 15; DropBtn.TextColor3 = Color3.new(1,1,1); DropBtn.BackgroundTransparency = 1
+local DropBtn = Instance.new("TextButton", DropContainer); DropBtn.Size = UDim2.new(1, 0, 1, 0); DropBtn.Text = "CHỌN PLAYER ▼"; DropBtn.Font = Enum.Font.GothamBold; DropBtn.TextSize = 14; DropBtn.TextColor3 = Color3.new(1,1,1); DropBtn.BackgroundTransparency = 1
 local DropListFrame = Instance.new("ScrollingFrame", PagePlayer); DropListFrame.Size = UDim2.new(0.96, 0, 0, 160); DropListFrame.Visible = false; DropListFrame.BackgroundColor3 = Color3.fromRGB(20,20,26); DropListFrame.ScrollBarThickness = 6; DropListFrame.ZIndex = 5
 local ListLayout = Instance.new("UIListLayout", DropListFrame)
 
@@ -330,7 +374,7 @@ DropBtn.MouseButton1Click:Connect(function()
         for _, v in pairs(DropListFrame:GetChildren()) do if v:IsA("TextButton") then v:Destroy() end end
         for _, p in pairs(game.Players:GetPlayers()) do
             if p ~= player then
-                local b = Instance.new("TextButton", DropListFrame); b.Size = UDim2.new(1, -10, 0, 38); b.Text = p.DisplayName; b.Font = Enum.Font.Gotham; b.TextSize = 14; b.BackgroundColor3 = Color3.fromRGB(40,40,48); b.TextColor3 = Color3.new(1,1,1); b.ZIndex = 6; Instance.new("UICorner", b)
+                local b = Instance.new("TextButton", DropListFrame); b.Size = UDim2.new(1, -10, 0, 38); b.Text = p.DisplayName; b.Font = Enum.Font.Gotham; b.TextSize = 13; b.BackgroundColor3 = Color3.fromRGB(40,40,48); b.TextColor3 = Color3.new(1,1,1); b.ZIndex = 6; Instance.new("UICorner", b)
                 b.MouseButton1Click:Connect(function() SelectedPlayer = p; DropBtn.Text = "ĐÃ CHỌN: " .. p.DisplayName; DropListFrame.Visible = false end)
             end
         end
@@ -379,8 +423,12 @@ AddToggle(PagePlayer, "CLICK / TAP TO TP", false, function(v)
     if v then GiveClickTPTool() else RemoveClickTPTool() end
 end)
 
--- [ TAB 5: ESP & VISUAL ]
+-- [ TAB 5: ESP ]
 AddToggle(PageESP, "FULL ESP (HIỂN THỊ KHOẢNG CÁCH)", false, function(v) _G.FullESP = v end)
+
+-- [ TAB 6: 🔥 TÍNH NĂNG ĐỘC QUYỀN CHỈ WARLAND CÓ ]
+AddToggle(PageWarLandExclusive, "💥 WARLAND EMP SHOCKWAVE (ĐẨY VĂNG KẺ ĐỊCH)", false, function(v) _G.WarLandEMP = v end)
+AddToggle(PageWarLandExclusive, "👻 GHOST STEALTH CLOAK (TÀNG HÌNH BÓNG MA)", false, function(v) ToggleGhostCloak(v) end)
 
 -- [ CÁC LUỒNG XỬ LÝ CHÍNH (LOOPS) ]
 task.spawn(function()
