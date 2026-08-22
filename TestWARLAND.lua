@@ -1,4 +1,4 @@
--- [[ 🚀 WARLAND VN - V97.8: DYNAMIC DASH BUTTON ]]
+-- [[ 🚀 WARLAND VN - V97.10: UNLIMITED ESP (100M+) & SMOOTH DASH ]]
 
 local player = game.Players.LocalPlayer
 local RunService = game:GetService("RunService")
@@ -45,7 +45,7 @@ local function ToggleAFK(state)
     end
 end
 
--- [ HÀM XỬ LÝ NÚT LƯỚT (DASH) NGOÀI MÀN HÌNH ]
+-- [ HÀM XỬ LÝ NÚT LƯỚT MƯỢT (SMOOTH DASH) ]
 local function ToggleDashButton(state)
     _G.DashButton = state
     if state then
@@ -80,11 +80,28 @@ local function ToggleDashButton(state)
                 if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = false end
             end)
 
-            -- Sự kiện bấm lướt
+            -- Sự kiện lướt mượt mà
+            local isDashing = false
             DashBtnInstance.MouseButton1Click:Connect(function()
+                if isDashing then return end
                 if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                    isDashing = true
                     local hrp = player.Character.HumanoidRootPart
-                    hrp.CFrame = hrp.CFrame + (hrp.CFrame.LookVector * 45)
+                    local startCFrame = hrp.CFrame
+                    local targetCFrame = startCFrame + (startCFrame.LookVector * 45)
+                    local duration = 0.15
+                    local elapsed = 0
+                    
+                    local dashConn
+                    dashConn = RunService.RenderStepped:Connect(function(dt)
+                        elapsed = elapsed + dt
+                        local alpha = math.clamp(elapsed / duration, 0, 1)
+                        hrp.CFrame = startCFrame:Lerp(targetCFrame, alpha)
+                        if alpha >= 1 then
+                            dashConn:Disconnect()
+                            isDashing = false
+                        end
+                    end)
                 end
             end)
         end
@@ -202,7 +219,6 @@ AddToggle(PageMovement, "NHẢY VÔ TẬN", false, function(v) _G.InfJump = v en
 AddSlider(PageMovement, "TỐC ĐỘ CHẠY", 16, 350, 16, function(v) if player.Character and player.Character:FindFirstChild("Humanoid") then player.Character.Humanoid.WalkSpeed = v end end)
 AddSlider(PageMovement, "NHẢY CAO", 50, 500, 50, function(v) if player.Character and player.Character:FindFirstChild("Humanoid") then player.Character.Humanoid.UseJumpPower = true; player.Character.Humanoid.JumpPower = v end end)
 
--- Thay thế nút lướt thường thành Toggle bật/tắt nút ngoài màn hình
 AddToggle(PageMovement, "⚡ NÚT LƯỚT NHANH (DASH)", false, function(v) ToggleDashButton(v) end)
 
 -- [ CÀI ĐẶT TAB PLAYER ]
@@ -260,8 +276,8 @@ AddToggle(PagePlayer, "CLICK / TAP TO TP", false, function(v)
     if v then GiveClickTPTool() else RemoveClickTPTool() end
 end)
 
--- [ CÀI ĐẶT TAB ESP ]
-AddToggle(PageESP, "FULL ESP", false, function(v) _G.FullESP = v end)
+-- [ CÀI ĐẶT TAB ESP (KHÔNG GIỚI HẠN KHOẢNG CÁCH) ]
+AddToggle(PageESP, "FULL ESP (100M+)", false, function(v) _G.FullESP = v end)
 
 -- [ CÁC LUỒNG XỬ LÝ CHÍNH ]
 task.spawn(function()
@@ -284,9 +300,10 @@ local function ApplyESP(p)
     local bill = Instance.new("BillboardGui", ScreenGui); bill.AlwaysOnTop = true; bill.Size = UDim2.new(0, 200, 0, 50); bill.ExtentsOffset = Vector3.new(0, 3, 0)
     local lbl = Instance.new("TextLabel", bill); lbl.Size = UDim2.new(1, 0, 1, 0); lbl.BackgroundTransparency = 1; lbl.TextColor3 = Color3.new(1,1,1); lbl.Font = Enum.Font.GothamBold; lbl.TextSize = 20; lbl.TextStrokeTransparency = 0
     RunService.RenderStepped:Connect(function()
-        if _G.FullESP and p.Character and p.Character:FindFirstChild("HumanoidRootPart") and p ~= player then
+        if _G.FullESP and p.Character and p.Character:FindFirstChild("HumanoidRootPart") and p ~= player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
             hl.Parent = p.Character; bill.Parent = p.Character:FindFirstChild("Head")
-            lbl.Text = p.DisplayName .. "\n[" .. math.floor((player.Character.HumanoidRootPart.Position - p.Character.HumanoidRootPart.Position).Magnitude) .."m]"
+            local distance = math.floor((player.Character.HumanoidRootPart.Position - p.Character.HumanoidRootPart.Position).Magnitude)
+            lbl.Text = p.DisplayName .. "\n[" .. distance .. "m]"
         else hl.Parent = nil; bill.Parent = nil end
     end)
 end
