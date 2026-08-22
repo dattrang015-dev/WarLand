@@ -1,7 +1,7 @@
 -- ====================================================================================
--- ||  🚀 WARLAND VN - V100.1: FIXED TP FLY & EXPANDED SOVEREIGN EDITION             ||
+-- ||  🚀 WARLAND VN - V100.2: FIXED TP FLY & ORIGINAL MOVEMENT FLY                  ||
 -- ||  ============================================================================  ||
--- ||  STATUS: [STABLE / FIXED] | FEATURES: FULL PACK + SMOOTH TP FLY FIX          ||
+-- ||  STATUS: [STABLE] | MOVEMENT FLY: ORIGINAL | TP FLY: FIXED & SMOOTH            ||
 -- ====================================================================================
 
 local player = game.Players.LocalPlayer
@@ -87,7 +87,7 @@ local function SetupHUD()
                 pcall(function()
                     ping = math.floor(Stats.Network.ServerStatsItem["Data Ping"]:GetValue())
                 end)
-                HUDInstance.Text = string.format("⚡ FPS: %d | 🏓 PING: %dms", currentFPS, ping)
+                HUDInstance.Text = string.Format("⚡ FPS: %d | 🏓 PING: %dms", currentFPS, ping)
             else
                 HUDInstance.Visible = false
             end
@@ -501,21 +501,30 @@ end)
 AddToggle(PageWarLandExclusive, "💥 WARLAND EMP SHOCKWAVE (ĐẨY VĂNG KẺ ĐỊCH)", false, function(v) _G.WarLandEMP = v end)
 AddToggle(PageWarLandExclusive, "👻 GHOST STEALTH CLOAK (TÀNG HÌNH BÓNG MA)", false, function(v) ToggleGhostCloak(v) end)
 
--- [ CÁC LUỒNG XỬ LÝ CHÍNH ]
+-- [ LUỒNG BAY CHUẨN (MOVEMENT FLY) GIỮ NGUYÊN BẢN GỐC ]
 task.spawn(function()
     local bv, bg
     while task.wait() do
         if _G.Flying and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
             local hrp = player.Character.HumanoidRootPart
-            if not bv then bv = Instance.new("BodyVelocity", hrp); bv.MaxForce = Vector3.new(1e9,1e9,1e9); bg = Instance.new("BodyGyro", hrp); bg.MaxTorque = Vector3.new(1e9,1e9,1e9) end
-            bv.Velocity = Camera.CFrame.LookVector * _G.FlySpeed; bg.CFrame = Camera.CFrame
+            if not bv then 
+                bv = Instance.new("BodyVelocity", hrp)
+                bv.MaxForce = Vector3.new(1e9, 1e9, 1e9) 
+                bg = Instance.new("BodyGyro", hrp)
+                bg.MaxTorque = Vector3.new(1e9, 1e9, 1e9) 
+            end
+            bv.Velocity = Camera.CFrame.LookVector * _G.FlySpeed 
+            bg.CFrame = Camera.CFrame
         else 
-            if bv then bv:Destroy(); bv = nil; bg:Destroy(); bg = nil end 
+            if bv then 
+                bv:Destroy(); bv = nil; 
+                bg:Destroy(); bg = nil 
+            end 
         end
     end
 end)
 
--- [ FIX LỖI TP FLY: SỬ DỤNG LERP MƯỢT MÀ VÀ TỰ ĐỘNG NOCLIP ]
+-- [ XỬ LÝ NOCLIP VÀ TP FLY TỚI PLAYER ]
 RunService.Stepped:Connect(function()
     if (_G.Noclip or _G.TPFlyToPlayer) and player.Character then
         for _, v in pairs(player.Character:GetDescendants()) do 
@@ -529,7 +538,6 @@ RunService.Stepped:Connect(function()
         local dist = (hrp.Position - targetHRP.Position).Magnitude
         
         if dist > 4 then
-            -- Dùng Lerp mượt mà để bay tới vị trí mục tiêu thay vì dịch chuyển giật cục
             hrp.CFrame = hrp.CFrame:Lerp(targetHRP.CFrame + Vector3.new(0, 3, 0), 0.15)
         else
             _G.TPFlyToPlayer = false
