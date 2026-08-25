@@ -1,4 +1,4 @@
--- [[ 🚀 WARLAND VN - V97.5: FIX ANTI-AFK BUG (TỰ CHẠY/KẸT PHÍM) ]]
+-- [[ 🚀 WARLAND VN - V97.3: CLEAN VERSION + TOOL CLICK TP ]]
 
 local player = game.Players.LocalPlayer
 local RunService = game:GetService("RunService")
@@ -22,34 +22,6 @@ _G.ClickTP = false
 _G.FullESP = false 
 _G.AntiAFK = false
 local SelectedPlayer = nil
-
--- [ CÁC HÀM XỬ LÝ TOOL CLICK TP ]
-local function GiveClickTPTool()
-    if player.Backpack:FindFirstChild("Click TP") or (player.Character and player.Character:FindFirstChild("Click TP")) then return end
-    local tool = Instance.new("Tool")
-    tool.Name = "Click TP"
-    tool.RequiresHandle = false
-    tool.Parent = player.Backpack
-
-    tool.Activated:Connect(function()
-        local mouse = player:GetMouse()
-        if mouse.Target and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            player.Character.HumanoidRootPart.CFrame = CFrame.new(mouse.Hit.Position + Vector3.new(0, 5, 0))
-        end
-    end)
-end
-
-local function RemoveClickTPTool()
-    local backpack = player:FindFirstChild("Backpack")
-    if backpack then
-        local tool = backpack:FindFirstChild("Click TP")
-        if tool then tool:Destroy() end
-    end
-    if player.Character then
-        local tool = player.Character:FindFirstChild("Click TP")
-        if tool then tool:Destroy() end
-    end
-end
 
 -- [ HÀM KÉO THẢ MENU ]
 local function MakeDraggable(obj)
@@ -96,6 +68,7 @@ local function CreateTab(name, isFirst)
     return p
 end
 
+-- [ TẠO CÁC TAB CHỨC NĂNG ]
 local PageHome = CreateTab("🏠 HOME", true)
 local PageMovement = CreateTab("🏃 MOVEMENT", false)
 local PagePlayer = CreateTab("👤 PLAYER", false)
@@ -183,16 +156,14 @@ Act(PagePlayer, "TELE ĐẾN HỌ (SIÊU XA)", Color3.fromRGB(0, 120, 200), func
         task.wait(1.5); DropBtn.Text = "ĐÃ CHỌN: " .. SelectedPlayer.DisplayName
     end
 end)
-
-AddToggle(PagePlayer, "CLICK / TAP TO TP", false, function(v) 
-    _G.ClickTP = v 
-    if v then GiveClickTPTool() else RemoveClickTPTool() end
-end)
+AddToggle(PagePlayer, "CLICK / TAP TO TP", false, function(v) _G.ClickTP = v end)
 
 -- [ TAB ESP ]
 AddToggle(PageESP, "FULL ESP", false, function(v) _G.FullESP = v end)
 
 -- [ CÁC LUỒNG XỬ LÝ (LOGIC) ]
+
+-- 1. Fly Logic
 task.spawn(function()
     local bv, bg
     while task.wait() do
@@ -210,12 +181,14 @@ task.spawn(function()
     end
 end)
 
+-- 2. Noclip Logic
 RunService.Stepped:Connect(function()
     if _G.Noclip and player.Character then
         for _, v in pairs(player.Character:GetDescendants()) do if v:IsA("BasePart") then v.CanCollide = false end end
     end
 end)
 
+-- 3. Infinite Jump Logic
 UserInputService.JumpRequest:Connect(function()
     if _G.InfJump and player.Character then
         local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
@@ -223,23 +196,44 @@ UserInputService.JumpRequest:Connect(function()
     end
 end)
 
+-- 4. Fullbright Logic
 RunService.RenderStepped:Connect(function()
     if _G.Fullbright then
         Lighting.Brightness = 2; Lighting.ClockTime = 14; Lighting.GlobalShadows = false; Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
     end
 end)
 
--- [ FIX ANTI-AFK: SỬ DỤNG CLICK NHANH, KHÔNG BAO GIỜ KẸT PHÍM/TỰ CHẠY ]
+-- 5. Anti-AFK Logic
 local vu = game:GetService("VirtualUser")
 player.Idled:Connect(function()
-    if _G.AntiAFK then
-        pcall(function()
-            vu:CaptureController()
-            vu:ClickButton2(Vector2.new(0, 0))
-        end)
-    end
+    if _G.AntiAFK then vu:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame); task.wait(1); vu:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame) end
 end)
 
+-- 6. Click TP Tool Logic
+local function GiveClickTPTool()
+    if player.Backpack:FindFirstChild("Click TP") or (player.Character and player.Character:FindFirstChild("Click TP")) then return end
+    local tool = Instance.new("Tool")
+    tool.Name = "Click TP"
+    tool.RequiresHandle = false
+    tool.Parent = player.Backpack
+
+    tool.Activated:Connect(function()
+        if _G.ClickTP then
+            local mouse = player:GetMouse()
+            if mouse.Target and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                player.Character.HumanoidRootPart.CFrame = CFrame.new(mouse.Hit.Position + Vector3.new(0, 5, 0))
+            end
+        end
+    end)
+end
+
+GiveClickTPTool()
+player.CharacterAdded:Connect(function()
+    task.wait(1)
+    GiveClickTPTool()
+end)
+
+-- 7. ESP Logic
 local function ApplyESP(p)
     local hl = Instance.new("Highlight")
     local bill = Instance.new("BillboardGui", ScreenGui); bill.AlwaysOnTop = true; bill.Size = UDim2.new(0, 200, 0, 50); bill.ExtentsOffset = Vector3.new(0, 3, 0)
@@ -254,5 +248,6 @@ end
 for _, p in pairs(game.Players:GetPlayers()) do ApplyESP(p) end
 game.Players.PlayerAdded:Connect(ApplyESP)
 
+-- [ NÚT MỞ/ĐÓNG MENU (WL) ]
 local Toggle = Instance.new("TextButton", ScreenGui); Toggle.Size = UDim2.new(0, 75, 0, 75); Toggle.Position = UDim2.new(0.02, 0, 0.42, 0); Toggle.Text = "WL"; Toggle.Font = Enum.Font.GothamBold; Toggle.TextSize = 22; Toggle.BackgroundColor3 = Color3.fromRGB(15, 15, 20); Toggle.TextColor3 = Color3.fromRGB(0, 255, 255); Instance.new("UICorner", Toggle).CornerRadius = UDim.new(1, 0); MakeDraggable(Toggle)
 Toggle.MouseButton1Click:Connect(function() Main.Visible = not Main.Visible end)
