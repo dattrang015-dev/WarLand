@@ -1,4 +1,4 @@
--- [[ 🚀 WARLAND VN - V97.3: CLEAN VERSION + TOOL CLICK TP ]]
+-- [[ 🚀 WARLAND VN - V97.9: CLEAN VERSION + CUSTOM DASH LOGO & POSITION + KÉO PLAYER + CLICK TP ]]
 
 local player = game.Players.LocalPlayer
 local RunService = game:GetService("RunService")
@@ -21,6 +21,7 @@ _G.Fullbright = false
 _G.ClickTP = false
 _G.FullESP = false 
 _G.AntiAFK = false
+_G.Dash = false
 local SelectedPlayer = nil
 
 -- [ HÀM KÉO THẢ MENU ]
@@ -156,10 +157,20 @@ Act(PagePlayer, "TELE ĐẾN HỌ (SIÊU XA)", Color3.fromRGB(0, 120, 200), func
         task.wait(1.5); DropBtn.Text = "ĐÃ CHỌN: " .. SelectedPlayer.DisplayName
     end
 end)
-AddToggle(PagePlayer, "CLICK / TAP TO TP", false, function(v) _G.ClickTP = v end)
 
--- [ TAB ESP ]
-AddToggle(PageESP, "FULL ESP", false, function(v) _G.FullESP = v end)
+Act(PagePlayer, "🧲 KÉO PLAYER ĐẾN CHỖ BẠN", Color3.fromRGB(150, 0, 150), function()
+    if not SelectedPlayer then
+        DropBtn.Text = "LỖI: CHƯA CHỌN PLAYER!"
+        task.wait(1.5); DropBtn.Text = "CHỌN PLAYER ▼"
+        return
+    end
+    if SelectedPlayer.Character and SelectedPlayer.Character:FindFirstChild("HumanoidRootPart") and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        SelectedPlayer.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame + Vector3.new(3, 0, 3)
+    else
+        DropBtn.Text = "LỖI: KHÔNG THỂ KÉO!"
+        task.wait(1.5); DropBtn.Text = "ĐÃ CHỌN: " .. SelectedPlayer.DisplayName
+    end
+end)
 
 -- [ CÁC LUỒNG XỬ LÝ (LOGIC) ]
 
@@ -209,7 +220,7 @@ player.Idled:Connect(function()
     if _G.AntiAFK then vu:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame); task.wait(1); vu:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame) end
 end)
 
--- 6. Click TP Tool Logic
+-- 6. Click TP Tool Logic (Cấp và Xóa dựa trên Toggle)
 local function GiveClickTPTool()
     if player.Backpack:FindFirstChild("Click TP") or (player.Character and player.Character:FindFirstChild("Click TP")) then return end
     local tool = Instance.new("Tool")
@@ -227,13 +238,70 @@ local function GiveClickTPTool()
     end)
 end
 
-GiveClickTPTool()
-player.CharacterAdded:Connect(function()
-    task.wait(1)
-    GiveClickTPTool()
+local function RemoveClickTPTool()
+    local t1 = player.Backpack:FindFirstChild("Click TP")
+    if t1 then t1:Destroy() end
+    if player.Character then
+        local t2 = player.Character:FindFirstChild("Click TP")
+        if t2 then t2:Destroy() end
+    end
+end
+
+AddToggle(PagePlayer, "CLICK / TAP TO TP", false, function(v) 
+    _G.ClickTP = v 
+    if v then
+        GiveClickTPTool()
+    else
+        RemoveClickTPTool()
+    end
 end)
 
--- 7. ESP Logic
+player.CharacterAdded:Connect(function()
+    task.wait(1)
+    if _G.ClickTP then
+        GiveClickTPTool()
+    end
+end)
+
+-- 7. DASH FEATURE + NÚT ẢNH LOGO NGOÀI MÀN HÌNH (50x50 & TỌA ĐỘ THEO YÊU CẦU)
+local DashScreenBtn = Instance.new("ImageButton", ScreenGui)
+DashScreenBtn.Size = UDim2.new(0, 50, 0, 50)
+DashScreenBtn.Position = UDim2.new(0.02, 762, 0.55, -227)
+DashScreenBtn.Image = "rbxassetid://70627586472131"
+DashScreenBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+DashScreenBtn.Visible = false
+Instance.new("UICorner", DashScreenBtn).CornerRadius = UDim.new(1, 0)
+MakeDraggable(DashScreenBtn)
+
+DashScreenBtn.MouseButton1Click:Connect(function()
+    if not _G.Dash then return end
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Humanoid") then
+        local hrp = player.Character.HumanoidRootPart
+        local hum = player.Character.Humanoid
+        local dir = hum.MoveDirection
+        
+        if dir.Magnitude == 0 then
+            local camLook = Camera.CFrame.LookVector
+            dir = Vector3.new(camLook.X, 0, camLook.Z)
+        else
+            dir = Vector3.new(dir.X, 0, dir.Z)
+        end
+        
+        if dir.Magnitude > 0 then
+            hrp.CFrame = hrp.CFrame + (dir.Unit * 35)
+        end
+    end
+end)
+
+AddToggle(PageMovement, "DASH (LƯỚT NHANH)", false, function(v)
+    _G.Dash = v
+    DashScreenBtn.Visible = v
+end)
+
+-- [ TAB ESP ]
+AddToggle(PageESP, "FULL ESP", false, function(v) _G.FullESP = v end)
+
+-- 8. ESP Logic
 local function ApplyESP(p)
     local hl = Instance.new("Highlight")
     local bill = Instance.new("BillboardGui", ScreenGui); bill.AlwaysOnTop = true; bill.Size = UDim2.new(0, 200, 0, 50); bill.ExtentsOffset = Vector3.new(0, 3, 0)
