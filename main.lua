@@ -1,4 +1,6 @@
--- [[ 🚀 WARLAND VN - V98.2: FULL ESP, DASH & TP FLY AUTO-STOP ]]
+-- ====================================================================================
+-- ||  🚀 WARLAND VN - V98.3: FIXED MOVEMENT FLY (WASD CONTROL) & TP FLY              ||
+-- ====================================================================================
 
 local player = game.Players.LocalPlayer
 local RunService = game:GetService("RunService")
@@ -257,7 +259,6 @@ Act(PagePlayer, "TELE ĐẾN HỌ (SIÊU XA)", Color3.fromRGB(0, 120, 200), func
     end
 end)
 
--- NÚT TP FLY TỚI PLAYER (TỰ ĐỘNG BẬT NOCLIP & TỰ DỪNG KHI ĐẾN NƠI)
 AddToggle(PagePlayer, "TP FLY TỚI PLAYER (AUTO-STOP)", false, function(v)
     if v and not SelectedPlayer then
         DropBtn.Text = "CHƯA CHỌN PLAYER!"
@@ -289,27 +290,63 @@ end)
 -- [ CÀI ĐẶT TAB ESP ]
 AddToggle(PageESP, "FULL ESP (100M+)", false, function(v) _G.FullESP = v end)
 
--- [ CÁC LUỒNG XỬ LÝ CHÍNH ]
+-- [ 🚀 FIX LỖI: LUỒNG FLY CHUẨN ĐIỀU KHIỂN BẰNG PHÍM WASD ]
 task.spawn(function()
     local bv, bg
     while task.wait() do
-        if _G.Flying and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        if _G.Flying and player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Humanoid") then
             local hrp = player.Character.HumanoidRootPart
-            if not bv then bv = Instance.new("BodyVelocity", hrp); bv.MaxForce = Vector3.new(1e9,1e9,1e9); bg = Instance.new("BodyGyro", hrp); bg.MaxTorque = Vector3.new(1e9,1e9,1e9) end
-            bv.Velocity = Camera.CFrame.LookVector * _G.FlySpeed; bg.CFrame = Camera.CFrame
-        else if bv then bv:Destroy(); bv = nil; bg:Destroy(); bg = nil end end
+            local humanoid = player.Character.Humanoid
+            
+            if not bv then 
+                bv = Instance.new("BodyVelocity", hrp)
+                bv.MaxForce = Vector3.new(1e9, 1e9, 1e9) 
+                bg = Instance.new("BodyGyro", hrp)
+                bg.MaxTorque = Vector3.new(1e9, 1e9, 1e9) 
+                humanoid.PlatformStand = true
+            end
+            
+            bg.CFrame = Camera.CFrame
+            
+            -- Đọc phím điều hướng WASD
+            local moveDir = Vector3.new()
+            if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+                moveDir = moveDir + Camera.CFrame.LookVector
+            end
+            if UserInputService:IsKeyDown(Enum.KeyCode.S) then
+                moveDir = moveDir - Camera.CFrame.LookVector
+            end
+            if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+                moveDir = moveDir - Camera.CFrame.RightVector
+            end
+            if UserInputService:IsKeyDown(Enum.KeyCode.D) then
+                moveDir = moveDir + Camera.CFrame.RightVector
+            end
+            
+            if moveDir.Magnitude > 0 then
+                bv.Velocity = moveDir.Unit * _G.FlySpeed
+            else
+                bv.Velocity = Vector3.new(0, 0.1, 0) -- Giữ lơ lửng, không rơi
+            end
+        else 
+            if bv then 
+                if player.Character and player.Character:FindFirstChild("Humanoid") then
+                    player.Character.Humanoid.PlatformStand = false
+                end
+                bv:Destroy(); bv = nil; 
+                bg:Destroy(); bg = nil 
+            end 
+        end
     end
 end)
 
 RunService.Stepped:Connect(function()
-    -- Noclip thủ công hoặc tự động từ TP Fly
     if (_G.Noclip or _G.TPFlyToPlayer) and player.Character then
         for _, v in pairs(player.Character:GetDescendants()) do 
             if v:IsA("BasePart") then v.CanCollide = false end 
         end
     end
     
-    -- Xử lý TP Fly tới Player (Tự động bay & Tự ngắt khi tới sát nơi)
     if _G.TPFlyToPlayer and SelectedPlayer and SelectedPlayer.Character and SelectedPlayer.Character:FindFirstChild("HumanoidRootPart") and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
         local hrp = player.Character.HumanoidRootPart
         local targetPos = SelectedPlayer.Character.HumanoidRootPart.Position
@@ -319,7 +356,6 @@ RunService.Stepped:Connect(function()
             hrp.CFrame = CFrame.new(hrp.Position, targetPos) * CFrame.new(0, 0, -3.5)
         else
             _G.TPFlyToPlayer = false
-            print("Đã tới nơi, tự động ngắt TP Fly!")
         end
     end
 end)
@@ -338,7 +374,7 @@ RunService.RenderStepped:Connect(function()
     if _G.InfZoom then
         player.CameraMaxZoomDistance = 999999
     else
-        player.CameraMaxZoomDistance = 400 -- Mặc định Roblox
+        player.CameraMaxZoomDistance = 400 
     end
 end)
 
