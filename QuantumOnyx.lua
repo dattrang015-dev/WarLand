@@ -1,9 +1,7 @@
 --[[
                             QUANTUM ONYX HUB PROJECT
             This was made by Quantum Onyx Team ( discord.gg/quantumonyx )
-            Key system removed as requested[span_1](start_span)[span_1](end_span)
-            Service by Luarmor.net
-            Compiled by: Flazhy
+            Key system completely removed
             Copyright © 2022-2026 Quantum Onyx Team - All Rights Reserved.
 ]]--
 local Directory = "https://raw.githubusercontent.com/flazhy/QuantumOnyx/refs/heads/main/Games"
@@ -21,12 +19,11 @@ local Scripts = {
         [10200395747] = Api .. "/65265b2869c03f57430ee45357d8c3f9.lua"
     }
 }
-local SCRIPT_ID = "0ae9fe4cf963e3a13d25eed0e2ce5940"
-local Players = game:GetService("Players")
-local gameId = game.GameId
 
+local gameId = game.GameId
 local StarterGui = game:GetService("StarterGui")
-local function Notify(title, desc, accent, duration)
+
+local function Notify(title, desc, duration)
     pcall(function()
         StarterGui:SetCore("SendNotification", {
             Title = title or "Quantum Onyx",
@@ -36,20 +33,28 @@ local function Notify(title, desc, accent, duration)
     end)
 end
 
+local function LoadScript(tier)
+    local tbl = Scripts[tier]
+    if not tbl then return end
+    local url = tbl[gameId]
+    if not url then
+        warn("[Quantum Onyx] No script for GameId: " .. tostring(gameId))
+        return
+    end
     local ok, err = pcall(function() loadstring(game:HttpGet(url))() end)
     if not ok then warn("[Quantum Onyx] Error: " .. tostring(err)) end
 end
 
 local function LoadHub()
     if Scripts.Premium[gameId] then
-        Notify("Quantum Onyx", "Loading Premium Script...", Color3.fromRGB(80, 230, 130), 3)
-        LoadScript("Premium", "Bypassed")
+        Notify("Quantum Onyx", "Loading Script...", 3)
+        LoadScript("Premium")
     elseif Scripts.Free[gameId] then
-        Notify("Quantum Onyx", "Loading Free Script...", Color3.fromRGB(80, 230, 130), 3)
-        LoadScript("Free", nil)
+        Notify("Quantum Onyx", "Loading Script...", 3)
+        LoadScript("Free")
     else
         warn("[Quantum Onyx] No script found for this GameId: " .. tostring(gameId))
-        Notify("Quantum Onyx", "No script found for this game.", Color3.fromRGB(255, 90, 110), 5)
+        Notify("Quantum Onyx", "No script found for this game.", 5)
     end
 end
 
