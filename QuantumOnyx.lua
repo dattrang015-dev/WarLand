@@ -36,36 +36,6 @@ local function Notify(title, desc, accent, duration)
     end)
 end
 
-local function apply_script_key(key)
-    getgenv().script_key = key
-    getgenv().key = key
-    if type(_G) == "table" then
-        _G.script_key = key
-    end
-    if type(shared) == "table" then
-        shared.script_key = key
-    end
-    pcall(function()
-        if type(getrenv) == "function" then
-            local env = getrenv()
-            if type(env) == "table" then
-                env.script_key = key
-            end
-        end
-    end)
-end
-
-local function LoadScript(tier, key)
-    local tbl = Scripts[tier]
-    if not tbl then return end
-    local url = tbl[gameId]
-    if not url then
-        warn("[Quantum Onyx] No " .. tier .. " script for GameId: " .. tostring(gameId))
-        return
-    end
-    if tier == "Premium" and key then
-        apply_script_key(key)
-    end
     local ok, err = pcall(function() loadstring(game:HttpGet(url))() end)
     if not ok then warn("[Quantum Onyx] Error: " .. tostring(err)) end
 end
